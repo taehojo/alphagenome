@@ -1,0 +1,2 @@
+Analysis,N_genes_analyzed,ANOVA_quartile_p,Regression_length_coef,Regression_length_pvalue,R2_without_length,R2_with_length,R2_change,Permutation_p
+Gene Length Correction,85,0.5358758962668752,-1.4644971812381926,0.7126766150036924,0.05579054067040656,0.057399850643772954,0.0016093099733663907,0.153
