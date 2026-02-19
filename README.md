@@ -14,7 +14,9 @@ alphagenome/
 │   ├── phase2_alphgenome/       # AlphaGenome API prediction (11 modalities)
 │   ├── phase3_plink/            # PLINK frequency analysis (case/control)
 │   ├── phase4_analysis/         # Case-control ratio, enrichment, reviewer analyses
-│   └── phase5_figures/          # Manuscript figure generation
+│   ├── phase5_figures/          # Manuscript figure generation
+│   ├── phase6_r5_replication/   # R5 independent replication (N=11,545)
+│   └── phase7_validation/       # Statistical validation & robustness
 ├── data/
 │   ├── README.md                # Data access instructions (ADSP application)
 │   └── Supplementary_Table_S1_GeneList.csv  # 85 AD gene list
@@ -36,6 +38,7 @@ scipy
 matplotlib
 seaborn
 intervaltree
+statsmodels
 ```
 
 PLINK 2.0 is required for Phase 1 variant extraction. PLINK 1.9 is required for Phase 3 frequency analysis.

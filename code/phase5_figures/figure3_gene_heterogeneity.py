@@ -1,233 +1,264 @@
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.lines import Line2D
-import warnings
-warnings.filterwarnings('ignore')
+import matplotlib.gridspec as gridspec
+import matplotlib.colors as mcolors
+import matplotlib.patheffects as pe
+from matplotlib.patches import Patch, Rectangle
 
 plt.rcParams.update({
-    'font.family': 'DejaVu Sans',
-    'font.size': 8,
-    'axes.titlesize': 9,
-    'axes.labelsize': 8,
-    'xtick.labelsize': 7,
-    'ytick.labelsize': 7,
-    'legend.fontsize': 7,
-    'figure.dpi': 300,
-    'savefig.dpi': 300,
+    'font.family': 'sans-serif',
+    'font.sans-serif': ['Arial', 'Helvetica', 'DejaVu Sans'],
+    'font.size': 7,
     'axes.linewidth': 0.5,
     'xtick.major.width': 0.5,
     'ytick.major.width': 0.5,
-    'axes.spines.top': False,
-    'axes.spines.right': False,
+    'xtick.major.size': 2.5,
+    'ytick.major.size': 2.5,
+    'axes.labelsize': 7,
+    'xtick.labelsize': 6,
+    'ytick.labelsize': 6,
 })
 
-COLORS = {
-    'reversed': '#7E6148',
-    'neutral': '#B09C85',
-    'enhanced': '#00A087',
-    'highlight_rev': '#E64B35',
-    'highlight_enh': '#3C5488',
-    'case': '#E64B35',
-    'ctrl': '#4DBBD5',
-}
+RED   = '#C62828'
+BLUE  = '#1565C0'
+GRAY_FILL = '#D0D0D0'
+GRAY_EDGE = '#AAAAAA'
+GRAY_TEXT = '#666666'
+BG_POS = '#FFF8F8'
+BG_NEG = '#F6F8FF'
 
-def load_data():
-    ir_df = pd.read_csv('<RESULTS_DIR>/all_gene_ir.csv')
-    ir_df = ir_df.sort_values('IR', ascending=True).reset_index(drop=True)
+DATA = '<WORK_DIR>/analysis/manuscript_revision/gene_continuous_metric.csv'
+OUT  = '<WORK_DIR>/analysis/manuscript_revision/Figure3_v4'
 
-    ir_df['category'] = 'neutral'
-    ir_df.loc[ir_df['IR'] < 0.7, 'category'] = 'reversed'
-    ir_df.loc[ir_df['IR'] >= 1.5, 'category'] = 'enhanced'
+df = pd.read_csv(DATA)
 
-    return ir_df
+rna = df[['gene', 'spearman_r_rna_seq', 'spearman_p_rna_seq']].dropna().copy()
+rna.columns = ['gene', 'r', 'p']
+rna['sig'] = rna['p'] < 0.05
+N = len(rna)
+n_pos = (rna['r'] > 0).sum()
+n_neg = (rna['r'] <= 0).sum()
 
-def panel_a_distribution(ax, ir_df):
+rna_sorted = rna.sort_values('r', ascending=False).reset_index(drop=True)
+top_set = set(rna_sorted.head(10)['gene'])
+bot_set = set(rna_sorted.tail(10)['gene'])
 
-    bins = np.arange(0.3, 3.5, 0.15)
-    n, bins_out, patches = ax.hist(ir_df['IR'], bins=bins, color='#B09C85',
-                                    edgecolor='white', linewidth=0.5, alpha=0.8)
+for _, row in rna[rna['sig']].iterrows():
+    if row['gene'] not in top_set and row['gene'] not in bot_set:
+        if row['r'] >= 0:
+            top_set.add(row['gene'])
+        else:
+            bot_set.add(row['gene'])
 
-    for patch, left_edge in zip(patches, bins_out[:-1]):
-        if left_edge < 0.7:
-            patch.set_facecolor(COLORS['reversed'])
-        elif left_edge >= 1.5:
-            patch.set_facecolor(COLORS['enhanced'])
+top_df = rna[rna['gene'].isin(top_set)].sort_values('r', ascending=False)
+bot_df = rna[rna['gene'].isin(bot_set)].sort_values('r', ascending=False)
+n_top = len(top_df)
+n_bot = len(bot_df)
+n_mid = N - n_top - n_bot
 
-    ax.axvline(x=1.0, color='black', linestyle='--', linewidth=0.8, alpha=0.7)
-    ax.axvline(x=0.7, color=COLORS['reversed'], linestyle=':', linewidth=0.8, alpha=0.7)
-    ax.axvline(x=1.5, color=COLORS['enhanced'], linestyle=':', linewidth=0.8, alpha=0.7)
+print(f"Top group: {n_top} genes, Bot group: {n_bot} genes, Middle omitted: {n_mid}")
+print(f"Top genes: {list(top_df['gene'])}")
+print(f"Bot genes: {list(bot_df['gene'])}")
 
-    ymax = ax.get_ylim()[1]
-    ax.text(0.45, ymax * 0.92, 'Reversed\n(IR<0.7)', fontsize=6,
-            color=COLORS['reversed'], ha='center', fontweight='bold')
-    ax.text(2.8, ymax * 0.92, 'Enhanced\n(IR\u22651.5)', fontsize=6,
-            color=COLORS['enhanced'], ha='center', fontweight='bold')
+modalities  = ['rna_seq', 'cage', 'chip_histone', 'dnase']
+mod_labels  = ['RNA-seq', 'CAGE', 'ChIP-\nhistone', 'DNase']
 
-    ax.set_xlabel('Interaction Ratio (IR)')
-    ax.set_ylabel('Number of genes')
-    ax.set_title('a', fontweight='bold', loc='left', fontsize=10)
-    ax.set_xlim(0.2, 3.5)
+sig_any = set()
+for mod in modalities:
+    p_col = f'spearman_p_{mod}'
+    mask = df[p_col].notna() & (df[p_col] < 0.05)
+    sig_any.update(df.loc[mask, 'gene'])
 
-def panel_b_lollipop(ax, ir_df):
+heat_genes = sorted(sig_any,
+    key=lambda g: df.loc[df['gene']==g, 'spearman_r_rna_seq'].values[0]
+                  if len(df.loc[df['gene']==g, 'spearman_r_rna_seq'].dropna()) else 0,
+    reverse=True)
 
-    for i, row in ir_df.iterrows():
-        color = COLORS[row['category']]
-        ax.hlines(y=i, xmin=1, xmax=row['IR'], color=color, linewidth=0.8, alpha=0.7)
-        ax.scatter(row['IR'], i, color=color, s=15, zorder=3)
+heat_r   = np.full((len(heat_genes), 4), np.nan)
+heat_sig = np.full((len(heat_genes), 4), False)
+for i, gene in enumerate(heat_genes):
+    row = df[df['gene'] == gene].iloc[0]
+    for j, mod in enumerate(modalities):
+        rv = row.get(f'spearman_r_{mod}', np.nan)
+        pv = row.get(f'spearman_p_{mod}', np.nan)
+        if pd.notna(rv): heat_r[i, j] = rv
+        if pd.notna(pv) and pv < 0.05: heat_sig[i, j] = True
+n_sig_mods = heat_sig.sum(axis=1)
 
-    ax.axvline(x=1.0, color='black', linestyle='--', linewidth=0.8, alpha=0.5)
+print(f"Heatmap genes: {len(heat_genes)}")
 
-    label_offsets = {
-        'APH1B':    (-3, -8),
-        'CASP7':    (-3, 0),
-        'CD2AP':    (-3, 8),
-        'LILRB2':   (3, -6),
-        'TREML2':   (3, 0),
-        'SIGLEC11': (3, 0),
-    }
-    highlight_genes = ['APH1B', 'CASP7', 'CD2AP', 'SIGLEC11', 'TREML2', 'LILRB2']
-    for i, row in ir_df.iterrows():
-        if row['gene'] in highlight_genes:
-            ofs = label_offsets[row['gene']]
-            ha = 'right' if row['category'] == 'reversed' else 'left'
-            color = COLORS['reversed'] if row['category'] == 'reversed' else COLORS['enhanced']
-            ax.annotate(row['gene'], xy=(row['IR'], i), xytext=ofs,
-                       textcoords='offset points', fontsize=5.5, va='center', ha=ha,
-                       fontweight='bold', color=color)
+fig = plt.figure(figsize=(180/25.4, 140/25.4))
 
-    ax.set_xlabel('Interaction Ratio (IR)')
-    ax.set_ylabel('Genes (ranked by IR)')
-    ax.set_title('b', fontweight='bold', loc='left', fontsize=10)
-    ax.set_xlim(0.2, 3.5)
-    ax.set_ylim(-1, len(ir_df))
-    ax.set_yticks([0, 20, 40, 64])
+gs = gridspec.GridSpec(2, 2,
+                       width_ratios=[1.15, 1],
+                       height_ratios=[1, 0.75],
+                       hspace=0.42, wspace=0.38,
+                       left=0.08, right=0.92, top=0.95, bottom=0.10)
 
-    n_neutral = len(ir_df[ir_df['category'] == 'neutral'])
-    legend_elements = [
-        Line2D([0], [0], marker='o', color='w', markerfacecolor=COLORS['reversed'],
-               markersize=5, label=f'Reversed (n=3)'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor=COLORS['neutral'],
-               markersize=5, label=f'Neutral (n={n_neutral})'),
-        Line2D([0], [0], marker='o', color='w', markerfacecolor=COLORS['enhanced'],
-               markersize=5, label=f'Enhanced (n=3)'),
-    ]
-    ax.legend(handles=legend_elements, loc='lower right', fontsize=6, frameon=True,
-              framealpha=0.9, edgecolor='#CCCCCC')
+ax_a = fig.add_subplot(gs[0, 0])
+ax_c = fig.add_subplot(gs[0, 1])
+ax_b = fig.add_subplot(gs[1, :])
 
-def panel_c_extreme_genes(ax, ir_df):
+ax_a.text(-0.14, 1.06, 'a', transform=ax_a.transAxes,
+          fontsize=10, fontweight='bold', va='top')
 
-    reversed_genes = ir_df[ir_df['category'] == 'reversed'].sort_values('IR')
-    enhanced_genes = ir_df[ir_df['category'] == 'enhanced'].sort_values('IR', ascending=False)
+bins = np.arange(-0.50, 0.60, 0.05)
+ax_a.hist(rna['r'], bins=bins, color=GRAY_FILL, edgecolor='white',
+          linewidth=0.5, zorder=2)
 
-    genes_to_plot = pd.concat([reversed_genes, enhanced_genes])
+sig_pos_r = rna.loc[(rna['sig']) & (rna['r'] > 0), 'r']
+sig_neg_r = rna.loc[(rna['sig']) & (rna['r'] < 0), 'r']
+if len(sig_pos_r):
+    ax_a.hist(sig_pos_r, bins=bins, color=RED, edgecolor='white',
+              linewidth=0.5, alpha=0.9, zorder=3)
+if len(sig_neg_r):
+    ax_a.hist(sig_neg_r, bins=bins, color=BLUE, edgecolor='white',
+              linewidth=0.5, alpha=0.9, zorder=3)
 
-    x = np.arange(len(genes_to_plot))
-    width = 0.35
+ax_a.axvline(0, color='#333', linewidth=0.6, linestyle='--', zorder=1)
+ax_a.set_xlabel('Spearman r (RNA-seq)')
+ax_a.set_ylabel('Number of genes')
+ax_a.spines['top'].set_visible(False)
+ax_a.spines['right'].set_visible(False)
 
-    high_pct = genes_to_plot['high_pct'].values
-    low_pct = genes_to_plot['low_pct'].values
+ax_a.text(0.96, 0.96,
+          f'{n_pos} positive ({n_pos/N*100:.1f}%)\n{n_neg} negative ({n_neg/N*100:.1f}%)',
+          transform=ax_a.transAxes, fontsize=5.5, va='top', ha='right',
+          bbox=dict(boxstyle='round,pad=0.3', fc='white', ec='#CCC', lw=0.4))
 
-    bars1 = ax.bar(x - width/2, high_pct, width, label='High-effect variants',
-                   color=COLORS['case'], alpha=0.8)
-    bars2 = ax.bar(x + width/2, low_pct, width, label='Low-effect variants',
-                   color=COLORS['ctrl'], alpha=0.8)
+handles = [Patch(fc=RED,       label='Positive (P < 0.05)'),
+           Patch(fc=BLUE,      label='Negative (P < 0.05)'),
+           Patch(fc=GRAY_FILL, label='n.s.')]
+ax_a.legend(handles=handles, fontsize=5.5, loc='upper left', frameon=True,
+            edgecolor='#CCC', fancybox=False, handlelength=1, handletextpad=0.3)
 
-    ax.axvline(x=2.5, color='gray', linestyle='-', linewidth=0.5, alpha=0.5)
+ax_b.text(-0.035, 1.13, 'b', transform=ax_b.transAxes,
+          fontsize=10, fontweight='bold', va='top')
 
-    ax.set_ylabel('Case-enriched variants (%)')
-    ax.set_xlabel('')
-    ax.set_xticks(x)
-    ax.set_xticklabels(genes_to_plot['gene'], rotation=45, ha='right', fontsize=7)
-    ax.set_title('c', fontweight='bold', loc='left', fontsize=10)
-    ax.set_ylim(0, 115)
+GAP = 2.5
 
-    ax.text(1, 108, 'Reversed', fontsize=6.5, ha='center',
-            color=COLORS['reversed'], fontweight='bold')
-    ax.text(4, 108, 'Enhanced', fontsize=6.5, ha='center',
-            color=COLORS['enhanced'], fontweight='bold')
+x_top = np.arange(n_top)
+x_bot = np.arange(n_top + GAP, n_top + GAP + n_bot)
+total_width = x_bot[-1] + 1
 
-    ax.legend(loc='upper center', fontsize=6, frameon=True,
-              framealpha=0.9, edgecolor='#CCCCCC', ncol=2)
+ax_b.axhspan(0, 0.6, color=BG_POS, zorder=0)
+ax_b.axhspan(-0.55, 0, color=BG_NEG, zorder=0)
 
-def panel_d_mechanism(ax, ir_df):
+for yg in [-0.4, -0.2, 0.2, 0.4]:
+    ax_b.axhline(yg, color='#E8E8E8', linewidth=0.4, zorder=1)
 
-    ax.set_xlim(0, 10)
-    ax.set_ylim(0, 10)
-    ax.axis('off')
-    ax.set_title('d', fontweight='bold', loc='left', fontsize=10)
+ax_b.axhline(0, color='#555', linewidth=0.6, zorder=2)
 
-    ax.text(5, 9.5, 'Gene-Specific Regulatory Patterns', fontsize=8,
-            ha='center', fontweight='bold')
+bar_w = 0.72
+for i, (_, row) in enumerate(top_df.iterrows()):
+    fc = RED if row['sig'] else GRAY_FILL
+    ec = RED if row['sig'] else GRAY_EDGE
+    ax_b.bar(x_top[i], row['r'], width=bar_w, color=fc, edgecolor=ec,
+             linewidth=0.4, zorder=3)
+    if row['sig']:
+        ax_b.text(x_top[i], row['r'] + 0.025, f"{row['r']:.2f}",
+                  ha='center', va='bottom', fontsize=4.5, color=RED, fontweight='bold')
 
-    rect1 = mpatches.FancyBboxPatch((0.5, 5), 4, 3.5, boxstyle="round,pad=0.1",
-                                     facecolor=COLORS['reversed'], alpha=0.2,
-                                     edgecolor=COLORS['reversed'], linewidth=1)
-    ax.add_patch(rect1)
-    ax.text(2.5, 8, 'REVERSED (IR < 0.7)', fontsize=7, ha='center',
-            fontweight='bold', color=COLORS['reversed'])
-    ax.text(2.5, 7.2, 'APH1B, CASP7, CD2AP', fontsize=6, ha='center', style='italic')
-    ax.text(2.5, 6.3, 'High-effect → Control-enriched\nLow-effect → Case-enriched',
-            fontsize=6, ha='center', linespacing=1.5)
+for i, (_, row) in enumerate(bot_df.iterrows()):
+    fc = BLUE if row['sig'] else GRAY_FILL
+    ec = BLUE if row['sig'] else GRAY_EDGE
+    ax_b.bar(x_bot[i], row['r'], width=bar_w, color=fc, edgecolor=ec,
+             linewidth=0.4, zorder=3)
+    if row['sig']:
+        ax_b.text(x_bot[i], row['r'] - 0.025, f"{row['r']:.2f}",
+                  ha='center', va='top', fontsize=4.5, color=BLUE, fontweight='bold')
 
-    rect2 = mpatches.FancyBboxPatch((5.5, 5), 4, 3.5, boxstyle="round,pad=0.1",
-                                     facecolor=COLORS['enhanced'], alpha=0.2,
-                                     edgecolor=COLORS['enhanced'], linewidth=1)
-    ax.add_patch(rect2)
-    ax.text(7.5, 8, 'ENHANCED (IR ≥ 1.5)', fontsize=7, ha='center',
-            fontweight='bold', color=COLORS['enhanced'])
-    ax.text(7.5, 7.2, 'SIGLEC11, TREML2, LILRB2', fontsize=6, ha='center', style='italic')
-    ax.text(7.5, 6.3, 'High-effect → Case-enriched\nLow-effect → Control-enriched',
-            fontsize=6, ha='center', linespacing=1.5)
+gap_cx = n_top + GAP / 2 - 0.5
+ax_b.text(gap_cx, 0, f'{n_mid} genes\n(n.s.)',
+          ha='center', va='center', fontsize=5.5, style='italic', color=GRAY_TEXT,
+          bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='#DDD', lw=0.4))
 
-    rect3 = mpatches.FancyBboxPatch((1, 0.5), 8, 3.5, boxstyle="round,pad=0.1",
-                                     facecolor='#F0F0F0', alpha=0.8,
-                                     edgecolor='gray', linewidth=1)
-    ax.add_patch(rect3)
-    ax.text(5, 3.5, 'Biological Implication', fontsize=7, ha='center', fontweight='bold')
-    ax.text(5, 2.5, '7.5-fold range in IR demonstrates that regulatory\nimpact interpretation must be gene-specific.',
-            fontsize=6, ha='center', linespacing=1.5)
-    ax.text(5, 1.2, 'Universal threshold-based prioritization is not appropriate.',
-            fontsize=6, ha='center', style='italic', color='#666666')
+ax_b.axvline(n_top - 0.5 + 0.3, color='#CCC', linewidth=0.5, linestyle=':', zorder=1)
+ax_b.axvline(n_top + GAP - 0.5 - 0.3, color='#CCC', linewidth=0.5, linestyle=':', zorder=1)
 
-def main():
+all_x = np.concatenate([x_top, x_bot])
+all_genes = list(top_df['gene']) + list(bot_df['gene'])
+all_sig   = list(top_df['sig']) + list(bot_df['sig'])
+all_r_val = list(top_df['r'])   + list(bot_df['r'])
 
-    print("Loading data...")
-    ir_df = load_data()
+ax_b.set_xticks(all_x)
+ax_b.set_xticklabels(all_genes, rotation=45, ha='right', fontsize=5.5)
 
-    print(f"Total genes: {len(ir_df)}")
-    print(f"IR range: {ir_df['IR'].min():.2f} - {ir_df['IR'].max():.2f}")
-    print(f"Reversed (IR < 0.7): {(ir_df['category'] == 'reversed').sum()}")
-    print(f"Enhanced (IR >= 1.5): {(ir_df['category'] == 'enhanced').sum()}")
+for i, lab in enumerate(ax_b.get_xticklabels()):
+    if all_sig[i]:
+        lab.set_color(RED if all_r_val[i] > 0 else BLUE)
+        lab.set_fontweight('bold')
+    else:
+        lab.set_color(GRAY_TEXT)
 
-    fig = plt.figure(figsize=(7.09, 5.5))
+ax_b.set_ylabel('Spearman r\n(RNA-seq)', fontsize=7)
+ax_b.set_xlim(-0.8, total_width - 0.2)
+ax_b.set_ylim(-0.55, 0.60)
+ax_b.spines['top'].set_visible(False)
+ax_b.spines['right'].set_visible(False)
 
-    gs = fig.add_gridspec(2, 2, height_ratios=[1, 1],
-                          hspace=0.40, wspace=0.30,
-                          left=0.08, right=0.97, top=0.96, bottom=0.08)
+ax_c.text(-0.20, 1.06, 'c', transform=ax_c.transAxes,
+          fontsize=10, fontweight='bold', va='top')
 
-    ax_a = fig.add_subplot(gs[0, 0])
-    ax_b = fig.add_subplot(gs[0, 1])
-    ax_c = fig.add_subplot(gs[1, :])
+vmax = 0.55
+cmap = plt.cm.RdBu_r
+norm = mcolors.TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
+heat_masked = np.ma.masked_invalid(heat_r)
 
-    print("Generating panels...")
-    panel_a_distribution(ax_a, ir_df)
-    panel_b_lollipop(ax_b, ir_df)
-    panel_c_extreme_genes(ax_c, ir_df)
+im = ax_c.imshow(heat_masked, aspect='auto', cmap=cmap, norm=norm,
+                 interpolation='nearest')
 
-    output_dir = '<OUTPUT_DIR>/figures/main'
+for i in range(len(heat_genes)):
+    for j in range(4):
+        if heat_sig[i, j]:
+            ax_c.text(j, i + 0.07, '*', ha='center', va='center',
+                      fontsize=9, fontweight='bold', color='white',
+                      path_effects=[pe.withStroke(linewidth=0.7, foreground='black')])
 
-    png_path = f'{output_dir}/Figure3_GeneHeterogeneity.png'
-    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white')
-    print(f"Saved: {png_path}")
+for i in range(len(heat_genes)):
+    for j in range(4):
+        if np.isnan(heat_r[i, j]):
+            ax_c.text(j, i, '–', ha='center', va='center',
+                      fontsize=5, color='#CCC')
 
-    pdf_path = '<OUTPUT_DIR>/figures/pdf/Figure3_GeneHeterogeneity.pdf'
-    fig.savefig(pdf_path, format='pdf', bbox_inches='tight', facecolor='white')
-    print(f"Saved: {pdf_path}")
+ax_c.set_xticks(range(4))
+ax_c.set_xticklabels(mod_labels, fontsize=6, rotation=45, ha='right')
+ax_c.set_yticks(range(len(heat_genes)))
+ax_c.set_yticklabels(heat_genes, fontsize=5.5)
 
-    plt.close()
-    print("\nFigure 3 complete!")
+for i, lab in enumerate(ax_c.get_yticklabels()):
+    gene = heat_genes[i]
+    rna_row = rna[rna['gene'] == gene]
+    if len(rna_row) and rna_row.iloc[0]['p'] < 0.05:
+        lab.set_color(RED if rna_row.iloc[0]['r'] > 0 else BLUE)
+        lab.set_fontweight('bold')
 
-if __name__ == '__main__':
-    main()
+if 'SORL1' in heat_genes:
+    idx = heat_genes.index('SORL1')
+    ax_c.add_patch(Rectangle((-0.5, idx - 0.5), 4, 1,
+                              fill=False, edgecolor='black', linewidth=1.5, zorder=5))
+
+for i in range(len(heat_genes)):
+    if n_sig_mods[i] >= 2:
+        ax_c.text(3.65, i, f'({int(n_sig_mods[i])})',
+                  fontsize=4.5, va='center', ha='left', color='#333')
+
+cbar = plt.colorbar(im, ax=ax_c, shrink=0.65, pad=0.08, aspect=20)
+cbar.set_label('Spearman r', fontsize=6)
+cbar.ax.tick_params(labelsize=5, width=0.4, length=2)
+cbar.outline.set_linewidth(0.4)
+
+fig.text(0.08, 0.015,
+         '* P < 0.05  |  Box = SORL1 (significant in 3 modalities)  |  '
+         'Bold gene names = significant in RNA-seq  |  '
+         'Parentheses = number of significant modalities',
+         fontsize=5, color='#888')
+
+plt.savefig(f'{OUT}.png', dpi=300, bbox_inches='tight', facecolor='white')
+plt.savefig(f'{OUT}.pdf', bbox_inches='tight', facecolor='white')
+plt.close()
+print(f"\nSaved: {OUT}.png / .pdf")
+print(f"Figure: 180mm x 140mm, 300 DPI")
