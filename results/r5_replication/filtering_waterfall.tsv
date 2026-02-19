@@ -1,0 +1,4 @@
+Step	N_variants	Description
+0_raw_pop_combined	166219	NHW + Hispanic + AA pop-specific files concatenated
+1_pop_maf_dedup	124531	Pop-specific MAF<1% + AC>=3, deduplicated by variant_key
+2_finite_cc_ratio	124396	Finite CC_ratio only

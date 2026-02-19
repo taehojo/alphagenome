@@ -1,0 +1,22 @@
+Panel	AC Threshold	N variants	CE%	RNA-seq IR	P-value
+A	>= 1	10321	71.2%	1.078	6.73e-07
+A	>= 3 *	9943	71.4%	1.087	5.63e-08
+A	>= 5	9261	72.0%	1.094	7.31e-09
+A	>= 10	7667	71.9%	1.097	3.44e-08
+
+Panel	Threshold	RNA-seq IR	RNA-seq P	ChIP-histone IR	ChIP-histone P
+B	Top 50% (P50)	1.121	3.00e-18	1.078	5.83e-09
+B	Top 45% (P55)	1.121	3.00e-18	1.078	5.83e-09
+B	Top 40% (P60)	1.121	3.00e-18	1.078	5.83e-09
+B	Top 35% (P65)	1.121	3.00e-18	1.078	5.83e-09
+B	Top 30% (P70)	1.074	1.24e-07	1.078	5.83e-09
+B	Top 25% (P75)	1.057	1.17e-04	1.059	4.04e-05
+B	Top 20% (P80) *	1.087	5.63e-08	1.059	4.04e-05
+B	Top 15% (P85)	1.101	1.22e-08	1.059	4.04e-05
+B	Top 10% (P90)	1.075	4.37e-04	1.039	3.76e-02
+B	Top 5% (P95)	1.048	5.88e-02	1.039	3.76e-02
+
+Panel	Variable	Spearman r	P-value
+C	Variant count	-0.009	0.95
+C	Gene length	0.009	0.95
+C	Variant density	-0.019	0.89

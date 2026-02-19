@@ -1,0 +1,8 @@
+Chromatin State	% All Variants	% High-effect	% Low-effect	OR	P-value
+Active_Promoter	1.5%	2.3%	1.2%	1.96	8.80e-05
+Enhancer	3.5%	6.1%	2.5%	2.60	2.04e-17
+Transcription	25.1%	32.8%	22.1%	1.72	1.81e-27
+Bivalent	0.1%	0.2%	0.0%	7.87	7.27e-03
+Repressed	6.3%	10.0%	4.9%	2.17	1.75e-19
+Quiescent	62.8%	47.6%	68.6%	0.42	1.04e-81
+Heterochromatin	0.6%	0.3%	0.7%	0.39	9.58e-03

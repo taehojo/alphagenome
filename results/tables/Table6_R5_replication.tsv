@@ -1,0 +1,5 @@
+Modality	R4 Discovery IR	R5 Replication IR (Median)	R5 Bootstrap 95% CI	R4 within R5 CI?	R5 P-value (median bootstrap)
+RNA-seq	1.086	1.129	[1.075, 1.201]	Yes	3.15e-04
+CAGE	1.056	1.151	[1.097, 1.214]	No	3.86e-05
+DNase	1.028	1.152	[1.100, 1.200]	No	3.13e-05
+ChIP-histone	1.062	1.107	[1.058, 1.153]	Yes	1.05e-03

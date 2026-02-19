@@ -1,0 +1,4 @@
+Population	N	N AD	N CN	Unmatched RNA-seq IR	Unmatched P	Matched RNA-seq IR (Median)	Bootstrap 95% CI	R4 IR within CI?
+NHW	6219	938	7707	1.101	1.48e-02	1.103	[0.950, 1.210]	Yes
+Hispanic	934	421	1701	1.202	5.47e-02	0.975	[0.921, 1.038]	No
+AA	1238	49	729	1.387	1.51e-05	1.075	[0.963, 1.162]	Yes
