@@ -339,9 +339,9 @@
 
   <div class="summary">
     <p>The goal here was to confirm that the R4 discovery findings are not sample-specific artifacts.</p>
-    <p>From ADSP R5 (N = 58,506 total), all R4 participants were removed, leaving 14,778 R5-only individuals. Asian (R4 AD n = 39) and Other populations were excluded due to insufficient statistical power, yielding a final replication cohort of <mark>11,545 participants (AD 1,408, CN 10,137)</mark> restricted to NHW, Hispanic, and AA.</p>
+    <p>From ADSP R5 (N = 58,506 total), all R4 participants were removed, leaving 14,778 R5-only individuals. Asian (R4 AD n = 39) and Other populations were excluded due to insufficient statistical power, yielding a final replication cohort of 11,545 participants (AD 1,408, CN 10,137) restricted to NHW, Hispanic, and AA.</p>
     <p>Because R5 has a much higher control-to-case ratio than R4, population-proportional control downsampling was applied to match the R4 ratio of 1:2.9. Bootstrap resampling (100 iterations) was used to obtain median IR and 95% CIs.</p>
-    <p>Result: RNA-seq IR was 1.086 in R4 and <mark>1.129 [1.075-1.201]</mark> in R5. The R4 point estimate falls within the R5 confidence interval, confirming replication.</p>
+    <p>Result: RNA-seq IR was 1.086 in R4 and 1.129 [1.075-1.201] in R5. The R4 point estimate falls within the R5 confidence interval, confirming replication.</p>
     <div class="code-path"><span>Code</span>code/phase6_r5_replication/01-08_*.py (8 scripts)</div>
   </div>
 
@@ -365,7 +365,7 @@
         Low-effect group: 70.0% case-enriched<br><br>
         <strong>IR = 76.0% / 70.0% = 1.086</strong>
       </div>
-      <p>IR > 1 means <mark>variants with higher predicted regulatory impact are preferentially found in AD cases</mark>. Under the null hypothesis (no association), the two groups would have similar case-enrichment rates and IR ≈ 1.0.</p>
+      <p>IR > 1 means variants with higher predicted regulatory impact are preferentially found in AD cases. Under the null hypothesis (no association), the two groups would have similar case-enrichment rates and IR ≈ 1.0.</p>
     </div>
   </div>
 
@@ -379,7 +379,7 @@
       <p>The two methods serve different purposes and each has its strengths at different scales.</p>
       <p><strong>Aggregate level (all 9,943 variants):</strong> IR works well here. The sample is large enough that the 20% cutoff is not a major concern, and IR directly yields odds ratios and confidence intervals, which is the standard reporting format reviewers expect.</p>
       <p><strong>Gene level (tens to hundreds of variants per gene):</strong> Spearman is preferred. For a gene with only 27 variants, "top 20%" means 5 variants, making IR highly unstable. Spearman uses all variants as a continuous measure, avoiding arbitrary dichotomization.</p>
-      <p>In short, <mark>IR is better for the big picture, Spearman is better for gene-by-gene resolution</mark>. Both are retained in the manuscript, each at the appropriate scale.</p>
+      <p>In short, IR is better for the big picture, Spearman is better for gene-by-gene resolution. Both are retained in the manuscript, each at the appropriate scale.</p>
     </div>
   </div>
 </div>
@@ -395,8 +395,8 @@
 
   <div class="summary">
     <p>The original manuscript used per-gene IR to show gene-specific heterogeneity. The problem is that IR requires a percentile threshold (top 20%), and this choice is arbitrary. A reviewer could reasonably ask: "Why 20%? Does the result hold at 30%?"</p>
-    <p>To address this, we switched to <mark>Spearman rank correlation</mark> between AlphaGenome scores and case-enrichment status per gene (minimum 10 variants). This is threshold-independent: positive r means higher scores associate with case-enrichment, negative r means the opposite.</p>
-    <p>Point-biserial correlation was computed as a parametric complement, and cross-modality consistency was assessed by counting modalities reaching significance per gene. <mark>SORL1 was significant in 3 of 4 modalities</mark>, the most robust gene in the dataset.</p>
+    <p>To address this, we switched to Spearman rank correlation between AlphaGenome scores and case-enrichment status per gene (minimum 10 variants). This is threshold-independent: positive r means higher scores associate with case-enrichment, negative r means the opposite.</p>
+    <p>Point-biserial correlation was computed as a parametric complement, and cross-modality consistency was assessed by counting modalities reaching significance per gene. SORL1 was significant in 3 of 4 modalities, the most robust gene in the dataset.</p>
     <div class="code-path"><span>Code</span>code/phase7_validation/gene_spearman_correlation.py</div>
   </div>
 
@@ -414,7 +414,7 @@
         Scores [0.1, 0.5, 100.0] become ranks [1, 2, 3]. The gap between 0.5 and 100.0 is treated the same as between 0.1 and 0.5. No distributional assumptions required.
       </div>
       <p><strong>Point-biserial</strong> is parametric: it uses raw values directly. It's the standard correlation when one variable is binary (case-enriched: yes/no) and the other is continuous (AlphaGenome score). It's more powerful when the continuous variable is roughly normally distributed, but can be distorted by heavy skew.</p>
-      <p>Running both provides <mark>convergent validity</mark>: if both methods agree, the result is robust to methodological assumptions.</p>
+      <p>Running both provides convergent validity: if both methods agree, the result is robust to methodological assumptions.</p>
     </div>
   </div>
 </div>
@@ -430,7 +430,7 @@
 
   <div class="summary">
     <p>Variant counts vary widely across genes (JAZF1: 488, TREML2: 27). Extreme IR values from small-sample genes could be noise rather than signal.</p>
-    <p><strong>Bootstrap CIs:</strong> 1,000 resampling iterations per gene to construct 95% confidence intervals. <mark>14 of 54 testable genes (25.9%) had CIs excluding 1</mark>, indicating statistically reliable effects.</p>
+    <p><strong>Bootstrap CIs:</strong> 1,000 resampling iterations per gene to construct 95% confidence intervals. 14 of 54 testable genes (25.9%) had CIs excluding 1, indicating statistically reliable effects.</p>
     <p><strong>Empirical Bayes shrinkage:</strong> Stabilizes estimates by pulling small-sample extremes toward the global mean, proportional to their uncertainty.</p>
     <div class="code-path"><span>Code</span>code/phase7_validation/gene_ir_bootstrap.py (R4) &nbsp;|&nbsp; r5_gene_ir_bootstrap.py (R5)</div>
   </div>
@@ -454,7 +454,7 @@
         <strong>Gene with 500 variants,</strong> observed IR = 1.5:<br>
         Low uncertainty (weight ≈ 0.05) → Shrunk IR = 1.08 × 0.05 + 1.5 × 0.95 = <strong>1.48</strong>
       </div>
-      <p><mark>Fewer variants → more shrinkage. More variants → estimate is trusted as-is.</mark></p>
+      <p>Fewer variants → more shrinkage. More variants → estimate is trusted as-is.</p>
     </div>
   </div>
 </div>
@@ -471,7 +471,7 @@
   <div class="summary">
     <p>IR is rank-based and distribution-free, which is a strength, but reviewers often expect a standard regression framework. Logistic regression was performed with case-enrichment as the outcome, z-scored AlphaGenome scores as the predictor, adjusting for ancestry and log-transformed MAF.</p>
     <p>A multi-modality model was also fitted with all four modalities as joint predictors; VIF values were all below 3. The same framework was applied to R5.</p>
-    <p><mark>ChIP-histone was significant in both IR and regression.</mark> RNA-seq was significant by IR but not by regression, attributable to extreme score skewness (13.2).</p>
+    <p>ChIP-histone was significant in both IR and regression. RNA-seq was significant by IR but not by regression, attributable to extreme score skewness (13.2).</p>
     <div class="code-path"><span>Code</span>code/phase7_validation/logistic_regression.py</div>
   </div>
 
@@ -491,7 +491,7 @@
       </div>
       <p><strong>IR</strong> is rank-based: it only needs to know which variants are in the top 20%, regardless of the raw score distribution. So skewness has no effect.</p>
       <p><strong>Logistic regression</strong> operates on z-scored values directly. With extreme skew, most data points cluster near identical values, giving the model little variation to work with. The signal is there but the regression framework cannot detect it.</p>
-      <p><mark>This is a limitation of the regression method, not evidence against the RNA-seq association.</mark> The divergence between IR and regression actually highlights their complementarity.</p>
+      <p>This is a limitation of the regression method, not evidence against the RNA-seq association. The divergence between IR and regression actually highlights their complementarity.</p>
     </div>
   </div>
 </div>
@@ -508,7 +508,7 @@
   <div class="summary">
     <p>These analyses address whether findings are dependent on specific analytical choices. Four dimensions were tested:</p>
     <p><strong>AC threshold:</strong> Varying from AC ≥ 1 to ≥ 10. IR ranged 1.078 to 1.097 for RNA-seq, strengthening with stricter filtering.</p>
-    <p><strong>Percentile cutoff:</strong> Top 5% through 50% in 10 steps. <mark>9 of 10 cutoffs reached significance</mark> for RNA-seq.</p>
+    <p><strong>Percentile cutoff:</strong> Top 5% through 50% in 10 steps. 9 of 10 cutoffs reached significance for RNA-seq.</p>
     <p><strong>Decile dose-response:</strong> Variants divided into 10 score-ranked bins. Case-enrichment increased monotonically with score rank (Spearman r = 0.784, P = 0.007).</p>
     <p><strong>Gene-level confounders:</strong> Gene length, variant count, and variant density showed no correlation with per-gene IR (all |r| < 0.02, P > 0.89).</p>
     <div class="code-path"><span>Code</span>code/phase7_validation/sensitivity_analyses.py (primary) &nbsp;|&nbsp; code/phase4_analysis/continuous_threshold_analysis.py, gene_length_correction.py (supplementary)</div>
@@ -544,9 +544,9 @@
   </div>
 
   <div class="summary">
-    <p>This analysis tests whether <mark>high AlphaGenome scores correspond to functionally active genomic regions in the brain</mark>, providing biological grounding for the statistical findings.</p>
+    <p>This analysis tests whether high AlphaGenome scores correspond to functionally active genomic regions in the brain, providing biological grounding for the statistical findings.</p>
     <p>Variants were mapped to chromatin states using the Roadmap Epigenomics E073 (dorsolateral prefrontal cortex) 15-state ChromHMM model, collapsed into 5 functional categories.</p>
-    <p>High-effect variants were enriched in active enhancers (<mark>OR = 2.60</mark>) and promoters (<mark>OR = 1.96</mark>), and depleted in quiescent regions (OR = 0.42). Neuron gene variants showed 2-fold higher occupancy in active regulatory elements compared to microglia genes (6.4% vs 3.3%).</p>
+    <p>High-effect variants were enriched in active enhancers (OR = 2.60) and promoters (OR = 1.96), and depleted in quiescent regions (OR = 0.42). Neuron gene variants showed 2-fold higher occupancy in active regulatory elements compared to microglia genes (6.4% vs 3.3%).</p>
     <div class="code-path"><span>Code</span>code/phase7_validation/regulatory_enrichment.py</div>
   </div>
 
@@ -576,7 +576,7 @@
         <strong>Neuron genes:</strong> Have <strong>fewer</strong> AD-enriched variants overall, but each variant has a stronger predicted regulatory effect.
       </div>
       <p>The ChromHMM analysis provides a mechanistic basis for this pattern. Variants in neuron genes are located in brain active regulatory elements (enhancers + promoters) at <strong>twice the rate</strong> of microglia gene variants (6.4% vs 3.3%).</p>
-      <p><mark>The higher per-variant effect in neuronal genes is explained by their localization in functionally active chromatin.</mark> A variant sitting on an active regulatory switch is naturally more consequential than one in an inactive region.</p>
+      <p>The higher per-variant effect in neuronal genes is explained by their localization in functionally active chromatin. A variant sitting on an active regulatory switch is naturally more consequential than one in an inactive region.</p>
     </div>
   </div>
 </div>
