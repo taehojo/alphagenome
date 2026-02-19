@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Additional Analyses Notes - AlphaGenome Rare Variants AD</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaf9;
+    --card: #ffffff;
+    --text: #1c1917;
+    --text-secondary: #57534e;
+    --border: #e7e5e4;
+    --accent-1: #0c4a6e;
+    --accent-1-bg: #e0f2fe;
+    --accent-2: #166534;
+    --accent-2-bg: #dcfce7;
+    --accent-3: #9a3412;
+    --accent-3-bg: #fff7ed;
+    --accent-4: #6b21a8;
+    --accent-4-bg: #faf5ff;
+    --accent-5: #b45309;
+    --accent-5-bg: #fffbeb;
+    --accent-6: #be123c;
+    --accent-6-bg: #fff1f2;
+    --code-bg: #f5f5f4;
+    --qa-bg: #f8fafc;
+    --highlight: #fef08a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 15px;
+    font-weight: 300;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  header {
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--text);
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  header .repo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: var(--code-bg);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 16px;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  header .repo:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+
+  header .intro {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  .section {
+    margin-bottom: 48px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+
+  .section-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .s1 .section-number { background: var(--accent-1); }
+  .s2 .section-number { background: var(--accent-2); }
+  .s3 .section-number { background: var(--accent-3); }
+  .s4 .section-number { background: var(--accent-4); }
+  .s5 .section-number { background: var(--accent-5); }
+  .s6 .section-number { background: var(--accent-6); }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .summary p {
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .summary p:last-child { margin-bottom: 0; }
+
+  .code-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    color: var(--accent-1);
+    word-break: break-all;
+  }
+
+  .code-path span {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .qa-block {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    background: var(--card);
+  }
+
+  .qa-question {
+    padding: 16px 20px;
+    background: var(--qa-bg);
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .qa-question:hover {
+    background: #f1f5f9;
+  }
+
+  .qa-icon {
+    font-weight: 700;
+    font-size: 13px;
+    color: white;
+    background: var(--text-secondary);
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .qa-question-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .qa-arrow {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--text-secondary);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    line-height: 22px;
+  }
+
+  .qa-block.open .qa-arrow {
+    transform: rotate(180deg);
+  }
+
+  .qa-answer {
+    display: none;
+    padding: 20px 20px 20px 52px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+  }
+
+  .qa-block.open .qa-answer {
+    display: block;
+  }
+
+  .qa-answer p {
+    margin-bottom: 12px;
+  }
+
+  .qa-answer p:last-child { margin-bottom: 0; }
+
+  .qa-answer code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  .qa-answer .formula {
+    background: var(--code-bg);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .qa-answer .example {
+    background: var(--accent-1-bg);
+    border-left: 3px solid var(--accent-1);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13.5px;
+  }
+
+  .qa-answer .analogy {
+    background: var(--accent-5-bg);
+    border-left: 3px solid var(--accent-5);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13.5px;
+  }
+
+  mark {
+    background: var(--highlight);
+    padding: 1px 4px;
+    border-radius: 2px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+  }
+
+  .controls button {
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .controls button:hover {
+    background: var(--code-bg);
+    color: var(--text);
+  }
+
+  .dist-visual {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin: 8px 0;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>Additional Analyses Notes</h1>
+  <a class="repo" href="https://github.com/taehojo/alphagenome" target="_blank">github.com/taehojo/alphagenome</a>
+  <p class="intro">
+    Based on internal review feedback, additional analyses were performed to strengthen statistical significance, add independent replication, and address potential confounders. Below are experiment summaries, code locations, and methodological notes for each of the six analysis categories.
+  </p>
+</header>
+
+<!-- ============ SECTION 1 ============ -->
+<div class="section s1">
+  <div class="section-header">
+    <div class="section-number">1</div>
+    <div class="section-title">Independent Replication in ADSP R5</div>
+  </div>
+
+  <div class="summary">
+    <p>The goal here was to confirm that the R4 discovery findings are not sample-specific artifacts.</p>
+    <p>From ADSP R5 (N = 58,506 total), all R4 participants were removed, leaving 14,778 R5-only individuals. Asian (R4 AD n = 39) and Other populations were excluded due to insufficient statistical power, yielding a final replication cohort of <mark>11,545 participants (AD 1,408, CN 10,137)</mark> restricted to NHW, Hispanic, and AA.</p>
+    <p>Because R5 has a much higher control-to-case ratio than R4, population-proportional control downsampling was applied to match the R4 ratio of 1:2.9. Bootstrap resampling (100 iterations) was used to obtain median IR and 95% CIs.</p>
+    <p>Result: RNA-seq IR was 1.086 in R4 and <mark>1.129 [1.075-1.201]</mark> in R5. The R4 point estimate falls within the R5 confidence interval, confirming replication.</p>
+    <div class="code-path"><span>Code</span>code/phase6_r5_replication/01-08_*.py (8 scripts)</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Can you walk through how the Interaction Ratio is computed?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>The 9,943 rare variants are split by AlphaGenome score into two groups:</p>
+      <div class="formula">
+        Top 20% by score → "high-effect" variants (~1,989)<br>
+        Bottom 80% → "low-effect" variants (~7,954)
+      </div>
+      <p>Within each group, we calculate the fraction that is case-enriched (CC_ratio > 1):</p>
+      <div class="formula">
+        High-effect group: 76.0% case-enriched<br>
+        Low-effect group: 70.0% case-enriched<br><br>
+        <strong>IR = 76.0% / 70.0% = 1.086</strong>
+      </div>
+      <p>IR > 1 means <mark>variants with higher predicted regulatory impact are preferentially found in AD cases</mark>. Under the null hypothesis (no association), the two groups would have similar case-enrichment rates and IR ≈ 1.0.</p>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Why use the 20% threshold for IR instead of Spearman from the start?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>The two methods serve different purposes and each has its strengths at different scales.</p>
+      <p><strong>Aggregate level (all 9,943 variants):</strong> IR works well here. The sample is large enough that the 20% cutoff is not a major concern, and IR directly yields odds ratios and confidence intervals, which is the standard reporting format reviewers expect.</p>
+      <p><strong>Gene level (tens to hundreds of variants per gene):</strong> Spearman is preferred. For a gene with only 27 variants, "top 20%" means 5 variants, making IR highly unstable. Spearman uses all variants as a continuous measure, avoiding arbitrary dichotomization.</p>
+      <p>In short, <mark>IR is better for the big picture, Spearman is better for gene-by-gene resolution</mark>. Both are retained in the manuscript, each at the appropriate scale.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============ SECTION 2 ============ -->
+<div class="section s2">
+  <div class="section-header">
+    <div class="section-number">2</div>
+    <div class="section-title">Gene-Level Spearman Correlation Analysis</div>
+  </div>
+
+  <div class="summary">
+    <p>The original manuscript used per-gene IR to show gene-specific heterogeneity. The problem is that IR requires a percentile threshold (top 20%), and this choice is arbitrary. A reviewer could reasonably ask: "Why 20%? Does the result hold at 30%?"</p>
+    <p>To address this, we switched to <mark>Spearman rank correlation</mark> between AlphaGenome scores and case-enrichment status per gene (minimum 10 variants). This is threshold-independent: positive r means higher scores associate with case-enrichment, negative r means the opposite.</p>
+    <p>Point-biserial correlation was computed as a parametric complement, and cross-modality consistency was assessed by counting modalities reaching significance per gene. <mark>SORL1 was significant in 3 of 4 modalities</mark>, the most robust gene in the dataset.</p>
+    <div class="code-path"><span>Code</span>code/phase7_validation/gene_spearman_correlation.py</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Why include point-biserial in addition to Spearman?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p><strong>Spearman</strong> is non-parametric: it converts values to ranks before computing correlation. This makes it robust to any score distribution, but some reviewers are more familiar with parametric methods.</p>
+      <div class="example">
+        Scores [0.1, 0.5, 100.0] become ranks [1, 2, 3]. The gap between 0.5 and 100.0 is treated the same as between 0.1 and 0.5. No distributional assumptions required.
+      </div>
+      <p><strong>Point-biserial</strong> is parametric: it uses raw values directly. It's the standard correlation when one variable is binary (case-enriched: yes/no) and the other is continuous (AlphaGenome score). It's more powerful when the continuous variable is roughly normally distributed, but can be distorted by heavy skew.</p>
+      <p>Running both provides <mark>convergent validity</mark>: if both methods agree, the result is robust to methodological assumptions.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============ SECTION 3 ============ -->
+<div class="section s3">
+  <div class="section-header">
+    <div class="section-number">3</div>
+    <div class="section-title">Gene-Level Uncertainty Quantification</div>
+  </div>
+
+  <div class="summary">
+    <p>Variant counts vary widely across genes (JAZF1: 488, TREML2: 27). Extreme IR values from small-sample genes could be noise rather than signal.</p>
+    <p><strong>Bootstrap CIs:</strong> 1,000 resampling iterations per gene to construct 95% confidence intervals. <mark>14 of 54 testable genes (25.9%) had CIs excluding 1</mark>, indicating statistically reliable effects.</p>
+    <p><strong>Empirical Bayes shrinkage:</strong> Stabilizes estimates by pulling small-sample extremes toward the global mean, proportional to their uncertainty.</p>
+    <div class="code-path"><span>Code</span>code/phase7_validation/gene_ir_bootstrap.py (R4) &nbsp;|&nbsp; r5_gene_ir_bootstrap.py (R5)</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">How does empirical Bayes decide the degree of shrinkage?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>There is no separate "extreme value detector." The same formula applies to every gene, and the shrinkage magnitude is determined by each gene's estimation uncertainty:</p>
+      <div class="formula">
+        Shrunk IR = Global mean × (uncertainty weight) + Observed IR × (1 - uncertainty weight)
+      </div>
+      <div class="example">
+        <strong>Gene with 10 variants,</strong> observed IR = 3.0, global mean = 1.08:<br>
+        High uncertainty (weight ≈ 0.6) → Shrunk IR = 1.08 × 0.6 + 3.0 × 0.4 = <strong>1.85</strong><br><br>
+        <strong>Gene with 500 variants,</strong> observed IR = 1.5:<br>
+        Low uncertainty (weight ≈ 0.05) → Shrunk IR = 1.08 × 0.05 + 1.5 × 0.95 = <strong>1.48</strong>
+      </div>
+      <p><mark>Fewer variants → more shrinkage. More variants → estimate is trusted as-is.</mark></p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============ SECTION 4 ============ -->
+<div class="section s4">
+  <div class="section-header">
+    <div class="section-number">4</div>
+    <div class="section-title">Regression-Based Validation</div>
+  </div>
+
+  <div class="summary">
+    <p>IR is rank-based and distribution-free, which is a strength, but reviewers often expect a standard regression framework. Logistic regression was performed with case-enrichment as the outcome, z-scored AlphaGenome scores as the predictor, adjusting for ancestry and log-transformed MAF.</p>
+    <p>A multi-modality model was also fitted with all four modalities as joint predictors; VIF values were all below 3. The same framework was applied to R5.</p>
+    <p><mark>ChIP-histone was significant in both IR and regression.</mark> RNA-seq was significant by IR but not by regression, attributable to extreme score skewness (13.2).</p>
+    <div class="code-path"><span>Code</span>code/phase7_validation/logistic_regression.py</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Why did RNA-seq reach significance by IR but not by regression?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>RNA-seq scores have a skewness of 13.2, meaning the distribution is extremely right-tailed: most variants score very low, and a small number score very high.</p>
+      <div class="dist-visual">
+        Normal:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ▁▃▆█▆▃▁ &nbsp;&nbsp;&nbsp; (symmetric)<br>
+        Skewness 13: █▃▁ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (mass on left, long right tail)
+      </div>
+      <p><strong>IR</strong> is rank-based: it only needs to know which variants are in the top 20%, regardless of the raw score distribution. So skewness has no effect.</p>
+      <p><strong>Logistic regression</strong> operates on z-scored values directly. With extreme skew, most data points cluster near identical values, giving the model little variation to work with. The signal is there but the regression framework cannot detect it.</p>
+      <p><mark>This is a limitation of the regression method, not evidence against the RNA-seq association.</mark> The divergence between IR and regression actually highlights their complementarity.</p>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============ SECTION 5 ============ -->
+<div class="section s5">
+  <div class="section-header">
+    <div class="section-number">5</div>
+    <div class="section-title">Sensitivity Analyses</div>
+  </div>
+
+  <div class="summary">
+    <p>These analyses address whether findings are dependent on specific analytical choices. Four dimensions were tested:</p>
+    <p><strong>AC threshold:</strong> Varying from AC ≥ 1 to ≥ 10. IR ranged 1.078 to 1.097 for RNA-seq, strengthening with stricter filtering.</p>
+    <p><strong>Percentile cutoff:</strong> Top 5% through 50% in 10 steps. <mark>9 of 10 cutoffs reached significance</mark> for RNA-seq.</p>
+    <p><strong>Decile dose-response:</strong> Variants divided into 10 score-ranked bins. Case-enrichment increased monotonically with score rank (Spearman r = 0.784, P = 0.007).</p>
+    <p><strong>Gene-level confounders:</strong> Gene length, variant count, and variant density showed no correlation with per-gene IR (all |r| < 0.02, P > 0.89).</p>
+    <div class="code-path"><span>Code</span>code/phase7_validation/sensitivity_analyses.py (primary) &nbsp;|&nbsp; code/phase4_analysis/continuous_threshold_analysis.py, gene_length_correction.py (supplementary)</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Were these sensitivity analyses run in both R4 and R5?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>The four sensitivity tests were performed on the <strong>R4 discovery data</strong>. R5 serves a different purpose: independent replication of the core IR finding.</p>
+      <div class="formula">
+        Sensitivity (4 tests): R4 only<br>
+        Regression: R4 + R5<br>
+        Bootstrap IR/CI: R4 + R5<br>
+        R5 role: "Does the R4 finding hold in independent samples?"
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ============ SECTION 6 ============ -->
+<div class="section s6">
+  <div class="section-header">
+    <div class="section-number">6</div>
+    <div class="section-title">Regulatory Element Annotation</div>
+  </div>
+
+  <div class="summary">
+    <p>This analysis tests whether <mark>high AlphaGenome scores correspond to functionally active genomic regions in the brain</mark>, providing biological grounding for the statistical findings.</p>
+    <p>Variants were mapped to chromatin states using the Roadmap Epigenomics E073 (dorsolateral prefrontal cortex) 15-state ChromHMM model, collapsed into 5 functional categories.</p>
+    <p>High-effect variants were enriched in active enhancers (<mark>OR = 2.60</mark>) and promoters (<mark>OR = 1.96</mark>), and depleted in quiescent regions (OR = 0.42). Neuron gene variants showed 2-fold higher occupancy in active regulatory elements compared to microglia genes (6.4% vs 3.3%).</p>
+    <div class="code-path"><span>Code</span>code/phase7_validation/regulatory_enrichment.py</div>
+  </div>
+
+  <div class="controls"><button onclick="toggleAll(this)">Expand all Q&A</button></div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">Is the 15-to-5 state collapse a standard approach?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>The original data has 15 states (e.g., 1_TssA, 2_TssAFlnk, 6_EnhG, 7_Enh, ... 15_Quies). The collapse into 5 functional categories (active promoter, enhancer, transcription, repressed, quiescent) was done in this study, but it is a common approach in the field. Multiple published studies use similar groupings when the full 15-state resolution is not necessary for the analysis.</p>
+    </div>
+  </div>
+
+  <div class="qa-block">
+    <div class="qa-question" onclick="toggleQA(this)">
+      <div class="qa-icon">Q</div>
+      <div class="qa-question-text">What is the significance of the neuron (6.4%) vs microglia (3.3%) difference?</div>
+      <div class="qa-arrow">▾</div>
+    </div>
+    <div class="qa-answer">
+      <p>One of the central findings is a dual pattern across cell types:</p>
+      <div class="example">
+        <strong>Microglia genes:</strong> Accumulate <strong>many</strong> AD-enriched variants (mean CC ratio = 2.27), but each individual variant has a small predicted regulatory effect.<br><br>
+        <strong>Neuron genes:</strong> Have <strong>fewer</strong> AD-enriched variants overall, but each variant has a stronger predicted regulatory effect.
+      </div>
+      <p>The ChromHMM analysis provides a mechanistic basis for this pattern. Variants in neuron genes are located in brain active regulatory elements (enhancers + promoters) at <strong>twice the rate</strong> of microglia gene variants (6.4% vs 3.3%).</p>
+      <p><mark>The higher per-variant effect in neuronal genes is explained by their localization in functionally active chromatin.</mark> A variant sitting on an active regulatory switch is naturally more consequential than one in an inactive region.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function toggleQA(el) {
+  el.closest('.qa-block').classList.toggle('open');
+}
+
+function toggleAll(btn) {
+  const section = btn.closest('.section');
+  const blocks = section.querySelectorAll('.qa-block');
+  const allOpen = [...blocks].every(b => b.classList.contains('open'));
+
+  blocks.forEach(b => {
+    if (allOpen) {
+      b.classList.remove('open');
+    } else {
+      b.classList.add('open');
+    }
+  });
+
+  btn.textContent = allOpen ? 'Expand all Q&A' : 'Collapse all Q&A';
+}
+</script>
+
+</body>
+</html>
