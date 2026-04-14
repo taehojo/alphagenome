@@ -45,10 +45,22 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 .chr-bar .count{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:7px;font-weight:700;color:#4b5563}
 .chr-labels{position:relative;height:14px;margin-top:2px}
 .chr-labels .gene-grp{position:absolute;white-space:nowrap;font-size:8px;transform:translateX(-50%)}
-.chr-labels .gene-grp span.gl{cursor:pointer;padding:1px 3px;border-radius:2px}
+.chr-labels .gene-grp span.gl{cursor:pointer;padding:1px 3px;border-radius:2px;transition:all .15s}
 .chr-labels .gene-grp span.gl:hover{background:#e5e7eb;font-weight:700;color:#111}
+.chr-labels .gene-grp span.gl.gl-sel{font-size:10px;padding:2px 6px;border-radius:3px;animation:selPulse 2s ease-in-out infinite}
 .chr-labels .gene-grp span.sep{color:#d1d5db;padding:0 1px}
 .chr-labels span.active{font-weight:700}
+@keyframes selPulse{0%,100%{box-shadow:0 0 0 2px #fde047}50%{box-shadow:0 0 0 3px #facc15}}
+
+/* Selected-gene banner */
+.sel-banner{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:6px 0 12px;background:linear-gradient(90deg,#fffbeb,#fef3c7);border:1px solid #fbbf24;border-radius:6px;font-size:12px;flex-wrap:wrap}
+.sel-banner.empty{background:linear-gradient(90deg,#eef2ff,#e0e7ff);border-color:#818cf8;justify-content:center}
+.sel-banner .sel-label{color:#92400e;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+.sel-banner .sel-gene{font-weight:700;font-size:14px;padding:3px 12px;background:#fff;border-radius:4px;border:1.5px solid;font-family:'Courier New',monospace;letter-spacing:.02em}
+.sel-banner .sel-hint{color:#78350f;flex:1;min-width:200px}
+.sel-banner .sel-hint i{font-style:normal;margin-right:4px}
+.sel-banner .sel-hint-lg{color:#3730a3;font-weight:600;font-size:13px}
+.sel-banner .sel-hint-lg i{font-style:normal;margin-right:6px;font-size:15px}
 
 /* Filter buttons */
 .filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -107,9 +119,10 @@ var chrSizes = {1:249,2:242,3:198,4:190,5:182,6:171,7:159,8:146,9:138,10:133,11:
 var maxChr = 249;
 var POPS = ['NHW','AA','Asian','Hispanic'];
 
-// State
+// State — pre-select a default gene so users see a populated analysis on first load.
+var DEFAULT_GENE = genes['APP'] ? 'APP' : Object.keys(genes)[0];
 var state = {
-  selectedGene: null,
+  selectedGene: DEFAULT_GENE,
   highlightedCellType: null,
   variantPage: 0
 };
@@ -228,6 +241,21 @@ function render(){
   html += '<div class="card">';
   html += '<h3 style="margin-bottom:6px">Chromosome Map - '+Object.keys(genes).length+' Genes</h3>';
 
+  // Persistent banner: shows currently selected gene + switch hint.
+  if(state.selectedGene){
+    var selColor = (genes[state.selectedGene] && cellTypeColors[genes[state.selectedGene].cellType]) || '#7c3aed';
+    html += '<div class="sel-banner">';
+    html += '<span class="sel-label">Currently selected:</span>';
+    html += '<span class="sel-gene" style="border-color:'+selColor+';color:'+selColor+'">★ '+esc(state.selectedGene)+'</span>';
+    html += '<span class="sel-hint"><i>👆</i> Click any gene name or dot below to switch — its analysis will appear underneath.</span>';
+    html += '</div>';
+  } else {
+    html += '<div class="sel-banner empty">';
+    html += '<span class="sel-hint-lg"><i>👆</i> Click a gene name or dot below to view its analysis.</span>';
+    html += '</div>';
+  }
+
+
   html += '<div>';
   Object.keys(chrSizes).forEach(function(chr){
     var chrN = Number(chr);
@@ -305,11 +333,15 @@ function render(){
       html += '<div class="gene-grp" style="left:'+grp.center.toFixed(2)+'%">';
       grp.items.forEach(function(mg,i){
         var isSel = state.selectedGene===mg.name;
-        var color = isSel ? (cellTypeColors[mg.cellType]||'#9ca3af') : '#6b7280';
+        var cellColor = cellTypeColors[mg.cellType]||'#9ca3af';
+        var color = isSel ? '#fff' : '#6b7280';
         var weight = isSel ? '700' : '400';
-        var bg = isSel ? '#eef2ff' : 'transparent';
+        var bg = isSel ? cellColor : 'transparent';
+        var outline = isSel ? '1px solid '+cellColor : 'none';
+        var ring = isSel ? 'box-shadow:0 0 0 2px #fde047' : '';
         if(i>0) html += '<span class="sep">|</span>';
-        html += '<span class="gl" data-action="selectGene" data-gene="'+esc(mg.name)+'" data-action-hover="highlightDot" style="color:'+color+';font-weight:'+weight+';background:'+bg+'">'+esc(mg.name)+'</span>';
+        var prefix = isSel ? '★ ' : '';
+        html += '<span class="gl'+(isSel?' gl-sel':'')+'" data-action="selectGene" data-gene="'+esc(mg.name)+'" data-action-hover="highlightDot" style="color:'+color+';font-weight:'+weight+';background:'+bg+';border:'+outline+';'+ring+'">'+prefix+esc(mg.name)+'</span>';
       });
       html += '</div>';
     });
@@ -318,13 +350,8 @@ function render(){
   });
   html += '</div>';
 
-  // Bottom area: instruction (left) + cell type legend (right)
-  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-top:8px">';
-  if(!state.selectedGene){
-    html += '<div style="color:#6b7280;font-size:13px;padding:8px 0">Click a gene name or dot above to view its analysis below.</div>';
-  } else {
-    html += '<div></div>';
-  }
+  // Bottom area: cell type legend only (the instruction is now in the persistent banner above).
+  html += '<div style="display:flex;justify-content:flex-end;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-top:8px">';
   html += '<div class="filter-row" style="justify-content:flex-end"><span class="text-muted text-xs" style="margin-right:4px">Cell Type:</span>';
   Object.keys(cellTypeColors).forEach(function(ct){
     var count = (summary.byCellType[ct] && summary.byCellType[ct].genes) || 0;
