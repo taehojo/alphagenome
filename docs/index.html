@@ -43,6 +43,7 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 .chr-bar .gene-dot{position:absolute;top:50%;transform:translate(-50%,-50%);cursor:pointer;transition:all .15s;padding:2px 4px}
 .chr-bar .gene-dot:hover{z-index:20!important}
 .chr-bar .count{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:7px;font-weight:700;color:#4b5563}
+.chr-bar .sel-marker{position:absolute;top:-6px;bottom:-6px;width:2px;transform:translateX(-50%);border-radius:1px;pointer-events:none;z-index:0;opacity:.85}
 .chr-labels{position:relative;height:14px;margin-top:2px}
 .chr-labels .gene-grp{position:absolute;white-space:nowrap;font-size:8px;transform:translateX(-50%)}
 .chr-labels .gene-grp span.gl{cursor:pointer;padding:1px 3px;border-radius:2px;transition:all .15s}
@@ -274,18 +275,26 @@ function render(){
 
     html += '<div class="chr-row"><span class="chr-label">Ch'+chrN+'</span><div class="chr-bar-wrap">';
     html += '<div class="chr-bar" style="width:'+w.toFixed(1)+'%;position:relative">';
+    // Selection marker: a thin vertical rule through the bar at the selected gene's position.
+    // Rendered BEFORE the dots so dots stay visually on top (size unchanged).
+    var selMg = null;
+    for(var si=0;si<mapped.length;si++){ if(mapped[si].name===state.selectedGene){ selMg = mapped[si]; break; } }
+    if(selMg){
+      var mColor = cellTypeColors[selMg.cellType]||'#111827';
+      html += '<div class="sel-marker" style="left:'+selMg.pos.toFixed(2)+'%;background:'+mColor+'"></div>';
+    }
     mapped.forEach(function(mg){
       var isSel = state.selectedGene===mg.name;
       var isHL = state.highlightedCellType===mg.cellType;
       var color = cellTypeColors[mg.cellType]||'#9ca3af';
-      var ww = isSel?10:(isHL?6:4);
-      var hh = isSel?20:(isHL?16:12);
+      // No size change for the selected dot — the vertical marker above/below signals selection.
+      var ww = isHL?6:4;
+      var hh = isHL?16:12;
       var op = (isSel||isHL)?1:0.6;
       var z = isSel?20:(isHL?18:1);
-      // Selected: same cell-type color as everything else, just larger with a clean dark ring.
-      var shadow = isSel?'0 0 0 1.5px #111827':(isHL?'0 0 6px rgba(0,0,0,.3)':'none');
+      var shadow = isHL?'0 0 6px rgba(0,0,0,.3)':'none';
       html += '<div class="gene-dot" data-action="selectGene" data-gene="'+esc(mg.name)+'" style="left:'+mg.pos.toFixed(2)+'%;z-index:'+z+'">';
-      html += '<div style="width:'+ww+'px;height:'+hh+'px;background:'+color+';opacity:'+op+';border-radius:2px;box-shadow:'+shadow+'"></div>';
+      html += '<div style="width:'+ww+'px;height:'+hh+'px;background:'+color+';opacity:'+op+';border-radius:1px;box-shadow:'+shadow+'"></div>';
       html += '</div>';
     });
     html += '<span class="count">'+cGenes.length+'</span></div>';
