@@ -53,7 +53,7 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 
 /* Selected-gene hint line (above the chromosome map) */
 .sel-line{font-size:12px;color:#4b5563;margin:2px 0 10px}
-.sel-line b{font-weight:700}
+.sel-line b.sel-name{font-weight:700;color:#dc2626;padding:1px 6px;background:#fee2e2;border:1px solid #fca5a5;border-radius:3px;letter-spacing:.02em}
 .sel-line.empty{color:#6b7280}
 
 /* Filter buttons */
@@ -237,9 +237,8 @@ function render(){
 
   // Persistent one-line hint: shows the currently selected gene and how to switch.
   if(state.selectedGene){
-    var selColor = (genes[state.selectedGene] && cellTypeColors[genes[state.selectedGene].cellType]) || '#2563eb';
     html += '<p class="sel-line">';
-    html += 'Currently selected: <b style="color:'+selColor+'">'+esc(state.selectedGene)+'</b>';
+    html += 'Currently selected: <b class="sel-name">'+esc(state.selectedGene)+'</b>';
     html += ' — click any gene name below to switch.';
     html += '</p>';
   } else {
@@ -265,12 +264,12 @@ function render(){
     mapped.forEach(function(mg){
       var isSel = state.selectedGene===mg.name;
       var isHL = state.highlightedCellType===mg.cellType;
-      var color = cellTypeColors[mg.cellType]||'#9ca3af';
+      var color = isSel ? '#dc2626' : (cellTypeColors[mg.cellType]||'#9ca3af');
       var ww = isSel?8:(isHL?6:4);
-      var hh = isHL?16:12;
+      var hh = isSel?18:(isHL?16:12);
       var op = (isSel||isHL)?1:0.6;
       var z = isSel?20:(isHL?18:1);
-      var shadow = isSel?'0 0 3px rgba(0,0,0,.5)':(isHL?'0 0 6px rgba(0,0,0,.3)':'none');
+      var shadow = isSel?'0 0 0 2px #fff, 0 0 6px rgba(220,38,38,.6)':(isHL?'0 0 6px rgba(0,0,0,.3)':'none');
       html += '<div class="gene-dot" data-action="selectGene" data-gene="'+esc(mg.name)+'" style="left:'+mg.pos.toFixed(2)+'%;z-index:'+z+'">';
       html += '<div style="width:'+ww+'px;height:'+hh+'px;background:'+color+';opacity:'+op+';border-radius:1px;box-shadow:'+shadow+'"></div>';
       html += '</div>';
@@ -324,11 +323,10 @@ function render(){
       html += '<div class="gene-grp" style="left:'+grp.center.toFixed(2)+'%">';
       grp.items.forEach(function(mg,i){
         var isSel = state.selectedGene===mg.name;
-        var cellColor = cellTypeColors[mg.cellType]||'#9ca3af';
         var color = isSel ? '#fff' : '#6b7280';
         var weight = isSel ? '700' : '400';
-        var bg = isSel ? cellColor : 'transparent';
-        var outline = isSel ? '1px solid '+cellColor : 'none';
+        var bg = isSel ? '#dc2626' : 'transparent';
+        var outline = isSel ? '1px solid #991b1b' : 'none';
         if(i>0) html += '<span class="sep">|</span>';
         html += '<span class="gl'+(isSel?' gl-sel':'')+'" data-action="selectGene" data-gene="'+esc(mg.name)+'" data-action-hover="highlightDot" style="color:'+color+';font-weight:'+weight+';background:'+bg+';border:'+outline+'">'+esc(mg.name)+'</span>';
       });
