@@ -267,18 +267,29 @@ function render(){
   // Split 22 chromosomes across two columns to keep the map in the upper half of the viewport.
   var chrsWithGenes = Object.keys(chrSizes).filter(function(c){ return genesByChr[Number(c)]; });
   var chrMid = Math.ceil(chrsWithGenes.length / 2);
+  // Per-column scaling: each column's largest chromosome fills its column so the
+  // right-hand chromosomes (chr 12–22) aren't cramped against chr1's absolute max.
+  var leftColMax = 0, rightColMax = 0;
+  chrsWithGenes.forEach(function(c, idx){
+    var s = chrSizes[Number(c)];
+    if(idx < chrMid){ if(s > leftColMax) leftColMax = s; }
+    else { if(s > rightColMax) rightColMax = s; }
+  });
   html += '<div class="chr-columns"><div class="chr-col">';
   var chrRendered = 0;
+  var currentCol = 0; // 0 = left, 1 = right
   Object.keys(chrSizes).forEach(function(chr){
     var chrN = Number(chr);
     var cGenes = genesByChr[chrN];
     if(!cGenes) return;
     if(chrRendered === chrMid){
       html += '</div><div class="chr-col">';
+      currentCol = 1;
     }
     chrRendered++;
     // Proportional width but clamped: sqrt scaling so small chr aren't too tiny
-    var ratio = chrSizes[chrN]/maxChr;
+    var colMax = currentCol === 0 ? leftColMax : rightColMax;
+    var ratio = chrSizes[chrN]/colMax;
     var w = 30 + ratio*70; // range 30%-100%
     cGenes.sort(function(a,b){return (a.start||0)-(b.start||0)});
     var mapped = cGenes.map(function(gene){
