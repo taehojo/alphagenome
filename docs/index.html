@@ -56,12 +56,12 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 .chr-labels span.active{font-weight:700}
 
 /* Selection caption — minimal typographic layout */
-.sel-cap{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 14px;padding-bottom:10px;border-bottom:1px solid #f3f4f6}
+.sel-cap{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
 .sel-cap .sel-kicker{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#9ca3af}
 .sel-cap .sel-name{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#111827;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;padding:1px 2px}
 .sel-cap .sel-meta{font-size:11px;color:#6b7280;letter-spacing:.01em}
-.sel-cap .sel-hint{font-size:11px;color:#9ca3af;margin-left:auto}
-.sel-cap.empty .sel-hint{margin-left:0}
+.sel-cta{display:flex;align-items:center;gap:7px;font-size:12px;color:#374151;margin:0 0 12px;padding-bottom:10px;border-bottom:1px solid #f3f4f6}
+.sel-cta .sel-arrow{color:#2563eb;font-weight:700;font-size:13px;line-height:1}
 
 /* Filter buttons */
 .filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -256,10 +256,11 @@ function render(){
       if(g0.gvc) meta.push(g0.gvc);
       html += '<span class="sel-meta">'+esc(meta.join(' · '))+'</span>';
     }
-    html += '<span class="sel-hint">Click any gene below to switch</span>';
     html += '</div>';
+    html += '<p class="sel-cta"><span class="sel-arrow">↓</span>Try another gene — click any name or dot in the map below to see its analysis.</p>';
   } else {
-    html += '<div class="sel-cap empty"><span class="sel-kicker">Getting started</span><span class="sel-hint">Click any gene in the map to view its analysis</span></div>';
+    html += '<div class="sel-cap empty"><span class="sel-kicker">Getting started</span></div>';
+    html += '<p class="sel-cta"><span class="sel-arrow">↓</span>Click any gene in the chromosome map below to view its analysis.</p>';
   }
 
 
