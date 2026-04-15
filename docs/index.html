@@ -36,7 +36,10 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 .mb-2{margin-bottom:8px}
 
 /* Chromosome map */
-.chr-row{display:flex;align-items:flex-start;margin-bottom:10px}
+.chr-columns{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
+.chr-col{min-width:0}
+@media (max-width:768px){.chr-columns{grid-template-columns:1fr;gap:0}}
+.chr-row{display:flex;align-items:flex-start;margin-bottom:4px}
 .chr-label{width:28px;text-align:right;font-size:8px;font-weight:700;padding-top:2px;flex-shrink:0;margin-right:4px}
 .chr-bar-wrap{flex:1;position:relative}
 .chr-bar{height:16px;background:linear-gradient(90deg,#e5e7eb,#d1d5db);border-radius:8px;position:relative;overflow:visible}
@@ -44,7 +47,7 @@ h4{font-size:12px;font-weight:700;margin-bottom:6px}
 .chr-bar .gene-dot:hover{z-index:20!important}
 .chr-bar .count{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:7px;font-weight:700;color:#4b5563}
 .chr-bar .sel-marker{position:absolute;top:-7px;width:0;height:0;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid currentColor;pointer-events:none;z-index:5;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
-.chr-labels{position:relative;height:14px;margin-top:2px}
+.chr-labels{position:relative;height:14px;margin-top:1px}
 .chr-labels .gene-grp{position:absolute;white-space:nowrap;font-size:8px;transform:translateX(-50%)}
 .chr-labels .gene-grp span.gl{cursor:pointer;padding:1px 3px;border-radius:2px;transition:all .15s}
 .chr-labels .gene-grp span.gl:hover{background:#e5e7eb;font-weight:700;color:#111}
@@ -260,11 +263,19 @@ function render(){
   }
 
 
-  html += '<div>';
+  // Split 22 chromosomes across two columns to keep the map in the upper half of the viewport.
+  var chrsWithGenes = Object.keys(chrSizes).filter(function(c){ return genesByChr[Number(c)]; });
+  var chrMid = Math.ceil(chrsWithGenes.length / 2);
+  html += '<div class="chr-columns"><div class="chr-col">';
+  var chrRendered = 0;
   Object.keys(chrSizes).forEach(function(chr){
     var chrN = Number(chr);
     var cGenes = genesByChr[chrN];
     if(!cGenes) return;
+    if(chrRendered === chrMid){
+      html += '</div><div class="chr-col">';
+    }
+    chrRendered++;
     // Proportional width but clamped: sqrt scaling so small chr aren't too tiny
     var ratio = chrSizes[chrN]/maxChr;
     var w = 30 + ratio*70; // range 30%-100%
@@ -359,7 +370,7 @@ function render(){
     html += '</div>';
     html += '</div></div>';
   });
-  html += '</div>';
+  html += '</div></div>';
 
   // Bottom area: cell type legend only (the instruction is now in the persistent banner above).
   html += '<div style="display:flex;justify-content:flex-end;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-top:8px">';
