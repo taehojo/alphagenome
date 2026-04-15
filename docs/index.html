@@ -338,32 +338,9 @@ function render(){
       }
       if(!added) groups.push({center:mg.pos, items:[mg]});
     });
-    // Step 2: estimate rendered width per group and merge if overlapping
-    // ~0.55% per character, +0.3% per separator
-    function grpWidth(g){
-      var chars=0;
-      g.items.forEach(function(m){chars+=m.name.length});
-      return chars*0.55 + (g.items.length-1)*0.8;
-    }
-    var merged = true;
-    while(merged){
-      merged = false;
-      for(var i=0;i<groups.length-1;i++){
-        var a=groups[i], b=groups[i+1];
-        var aRight = a.center + grpWidth(a)/2;
-        var bLeft = b.center - grpWidth(b)/2;
-        if(aRight > bLeft - 0.5){
-          // Merge b into a
-          a.items = a.items.concat(b.items);
-          var sum=0;
-          a.items.forEach(function(m){sum+=m.pos});
-          a.center = sum/a.items.length;
-          groups.splice(i+1,1);
-          merged = true;
-          break;
-        }
-      }
-    }
+    // No char-based width estimation here — we do the collision pass in the DOM
+    // after render using real measured bounding rects (see adjustLabelPositions).
+
     html += '<div class="chr-labels" style="width:'+w.toFixed(1)+'%">';
     groups.forEach(function(grp){
       html += '<div class="gene-grp" style="left:'+grp.center.toFixed(2)+'%">';
@@ -533,6 +510,54 @@ function render(){
   html += '<div style="text-align:center;margin:16px 0 8px"><button data-action="scrollTop" style="padding:6px 20px;font-size:12px;background:#e5e7eb;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;color:#374151">Back to Top</button></div>';
 
   document.getElementById('app').innerHTML = html;
+  // Measure actual rendered label widths and push overlapping labels apart
+  // using real pixel geometry (works at any chromosome bar width).
+  adjustLabelPositions();
+}
+
+function adjustLabelPositions(){
+  var tracks = document.querySelectorAll('.chr-labels');
+  tracks.forEach(function(track){
+    var containerRect = track.getBoundingClientRect();
+    var cw = containerRect.width;
+    if(cw < 20) return;
+    var grps = Array.from(track.querySelectorAll('.gene-grp'));
+    if(grps.length < 2) return;
+    var items = grps.map(function(el){
+      var r = el.getBoundingClientRect();
+      var origLeftPct = parseFloat(el.style.left) || 0;
+      return {
+        el: el,
+        pct: origLeftPct,               // center position as % of track
+        halfPct: (r.width / cw) * 50    // half the label width, in % of track
+      };
+    });
+    items.sort(function(a,b){ return a.pct - b.pct; });
+    // Iterative repel pass — push neighbors apart until no overlap + buffer.
+    var BUF_PX = 3;                     // 3px breathing room between labels
+    var bufPct = (BUF_PX / cw) * 100;
+    for(var iter=0; iter<120; iter++){
+      var moved = false;
+      for(var i=0;i<items.length-1;i++){
+        var a = items[i], b = items[i+1];
+        var gap = (b.pct - b.halfPct) - (a.pct + a.halfPct);
+        if(gap < bufPct){
+          var push = (bufPct - gap) / 2;
+          a.pct -= push;
+          b.pct += push;
+          moved = true;
+        }
+      }
+      // Clamp to track bounds.
+      if(items.length){
+        var first = items[0], last = items[items.length-1];
+        if(first.pct < first.halfPct) first.pct = first.halfPct;
+        if(last.pct > 100 - last.halfPct) last.pct = 100 - last.halfPct;
+      }
+      if(!moved) break;
+    }
+    items.forEach(function(it){ it.el.style.left = it.pct.toFixed(2) + '%'; });
+  });
 }
 
 // Event delegation
