@@ -1,0 +1,2 @@
+case_in_peak,case_not_in_peak,ctrl_in_peak,ctrl_not_in_peak,case_rate,ctrl_rate,odds_ratio,fisher_p
+1159,5881,396,1994,0.16463068181818183,0.16569037656903765,0.9923439461783281,0.898514019689516
