@@ -4,15 +4,23 @@
 
 ### **https://taehojo.github.io/rarevariants/**
 
-An interactive catalogue of the 9,943 analysed rare variants across the 85
-AD-associated genes. Pick a gene to see its variants by genomic position, with
-the per-modality AlphaGenome effect scores, the case-control ratio and the
-enrichment direction for each one, broken down by ancestry stratum. Nothing to
-install; the whole catalogue loads in the browser.
+Every rare variant in the study, browsable in the page. No download, no install.
 
-<!-- 스크린샷을 docs/img/browser.png 로 넣으면 아래 줄의 주석을 벗기세요
-[![Variant browser](docs/img/browser.png)](https://taehojo.github.io/rarevariants/)
--->
+[![Chromosome map of the 85 genes](docs/img/browser-chromosome-map.png)](https://taehojo.github.io/rarevariants/)
+
+The 85 AD-associated genes laid out by chromosome and coloured by cell-type
+assignment. Click any gene to open it.
+
+[![Per-gene variant detail](docs/img/browser-gene-detail.png)](https://taehojo.github.io/rarevariants/)
+
+Each gene opens on its own interaction ratio and variant counts per ancestry
+stratum, a genomic position view showing where the variants fall and how strong
+their predicted effect is in each of the eight modalities, and a sortable table
+of per-variant scores with the case-control ratio and enrichment direction.
+
+The browser holds all 18,412 gene-mapped variant records, that is 85 genes
+across four ancestry strata before the allele-count filter and deduplication
+that define the 9,943-variant analysis set used in the paper.
 
 ---
 
