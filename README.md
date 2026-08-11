@@ -1,65 +1,66 @@
-# Integrative Analysis of Rare Variants and AlphaGenome-Predicted Regulatory Impacts within Alzheimer's Disease-Associated Genes
+# Rare variants and AlphaGenome-predicted regulatory impact in Alzheimer's disease genes
 
-## Overview
+Analysis code for Jo et al., *Cell Reports* (CELL-REPORTS-D-26-03243).
 
-This repository contains the analysis code and summary-level results for our study investigating the predicted regulatory impacts of rare variants enriched in Alzheimer's disease (AD) within 85 AD-associated genes. We analyzed 1,801,711 rare variants (MAF < 1%) from 24,595 ADSP WGS participants and used [AlphaGenome](https://deepmind.google/technologies/alphagenome/) to predict variant-level regulatory effects across 11 functional modalities, identifying 9,943 unique variants (AC >= 3) mapped to gene regions.
+Rare variants (MAF < 1%) in 85 AD-associated genes were scored with AlphaGenome
+across eight regulatory modalities and compared against case-control allele
+frequencies in 24,595 ADSP R4 participants, with an independent assessment in
+11,545 ADSP R5 participants.
 
-## Repository Structure
+## Data
+
+No participant-level or variant-level data are distributed here. Obtain them from:
+
+| Source | Where |
+|---|---|
+| ADSP R4 / R5 whole-genome sequencing | dbGaP `phs000572` (controlled access; apply through NIAGADS) |
+| snRNA-seq / snATAC-seq, prefrontal cortex | GEO `GSE174367` |
+| ChromHMM 15-state, 8 brain epigenomes | https://egg2.wustl.edu/roadmap/ |
+| cis-eQTL, whole blood | https://www.eqtlgen.org |
+| cis-eQTL, brain (v10) | https://gtexportal.org |
+| GWAS lead variants | Bellenguez et al. 2022, Supplementary Table 5, doi:10.1038/s41588-022-01024-z |
+| Gene annotation | GENCODE v38, GRCh38 |
+
+Place downloads under `data/` and pass paths on the command line.
+
+`data/Table_S2_variant_data.csv` holds the 9,943 analysed variants with their
+AlphaGenome scores and case-control summary statistics, the same table served by
+the browser at https://taehojo.github.io/rarevariants/ . It contains no
+individual-level genotypes.
+
+## Pipeline
+
+| Script | Produces |
+|---|---|
+| `01_extract_rare_variants.py` | Per-ancestry rare-variant extraction (PLINK 2.0) and mapping to the 85 gene regions |
+| `02_alphagenome_predict.py` | AlphaGenome scores, 8 modalities, via the API |
+| `03_interaction_ratio.py` | Table 2, Supplementary Tables S5, S7 (A-C), S8 |
+| `04_clustering_models.py` | Supplementary Tables S19, S23 (GEE, RINT) |
+| `05_permutation_specificity.py` | Supplementary Table S27 (1,000 size-matched gene sets) |
+| `06_noncoding_strata.py` | Supplementary Table S22 (VEP three strata) |
+| `07_r5_assessment.py` | Supplementary Tables S11, S18 (R5 assessment) |
+| `08_snatac_concordance.py` | Supplementary Table S13, Figure S6 |
+| `09_chromhmm_enrichment.py` | Supplementary Tables S14a/b, Figure S7 |
+| `10_bellenguez_concordance.py` | Supplementary Table S20 |
+
+`03_interaction_ratio.py` is the entry point and reproduces the primary result:
 
 ```
-rarevariants/
-├── code/
-│   ├── phase0_data_prep/             # Gene extraction, phenotype processing
-│   ├── phase1_rare_variants/         # PLINK2 rare variant extraction & gene mapping
-│   ├── phase2_alphgenome/            # AlphaGenome API prediction (11 modalities, developed using alphagenome-mcp)
-│   ├── phase3_plink/                 # PLINK frequency analysis (case/control)
-│   ├── phase4_analysis/              # Case-control ratio, enrichment, reviewer analyses
-│   ├── phase6_r5_replication/        # R5 independent replication (N=11,545)
-│   ├── phase7_validation/            # Statistical validation & robustness
-│   ├── phase8_geo_validation/        # Single-cell validation using GSE174367
-│   └── phase9_chromhmm_8regions/     # ChromHMM enrichment across 8 brain epigenomes
-├── data/
-│   ├── Table_S1_gene_list.csv        # 85 AD gene list (ADSP GVC)
-│   └── Table_S2_variant_data.csv     # 9,943 unique variants with AlphaGenome scores
-└── results/
-    ├── gene_interaction_ratios.csv         # Gene-level interaction ratios
-    ├── cell_type_analysis.csv              # Cell type-specific summary statistics
-    ├── IR_comparison_all_populations.csv   # AD vs Non-AD IR comparison
-    ├── IR_comparison_pop_stratified.csv    # Population-stratified IR
-    ├── sensitivity/                        # Sensitivity & robustness analyses
-    ├── phase8_geo_validation/              # snRNA-seq, snATAC-seq, bulk RNA-seq outputs
-    └── phase9_chromhmm_8regions/           # Per-state and grouped chromHMM enrichment tables
+pip install -r requirements.txt
+python code/03_interaction_ratio.py --variants data/variant_table.csv --outdir results
 ```
+
+Its outputs in `results/paper_tables/` are the values printed in the paper. The analysis set
+is variants with allele count >= 3, deduplicated on chromosome:position:REF:ALT,
+carrying all four primary AlphaGenome scores and a finite case-control ratio
+(n = 9,866); case-only variants are excluded.
 
 ## Requirements
 
-- Python >= 3.8
-- pandas, numpy, scipy, matplotlib, seaborn, intervaltree, statsmodels
-- PLINK 2.0 (Phase 1 variant extraction)
-- PLINK 1.9 (Phase 3 frequency analysis)
-- scanpy, anndata (Phase 8 single-cell analyses)
+Python >= 3.8 with the packages in `requirements.txt`. PLINK 2.0 for script 01,
+Ensembl VEP v110 for script 06.
 
-## Data Access
+## Related
 
-Individual-level genetic data are from the Alzheimer's Disease Sequencing Project (ADSP) WGS Release 4 and are available through [NIAGADS](https://adsp.niagads.org/) upon approval. See `data/README.md` for details.
-
-External public datasets used in Phases 8–9:
-
-- GSE174367 (Morabito et al., *Nat Genet* 2021) — NCBI GEO
-- Roadmap Epigenomics 15-state chromHMM tracks (E067–E074, E125)
-
-Gene-level and variant-level summary statistics are included in this repository under `data/` and `results/`.
-
-## Note on Code Paths
-
-All analysis code was executed on the Indiana University high-performance computing (HPC) environment. File paths in the code reference that specific infrastructure. To reproduce the analysis, update paths to match your local data locations.
-
-## Contact
-
-- Taeho Jo - tjo@iu.edu
-- Center for Neuroimaging, Department of Radiology and Imaging Sciences
-- Indiana University School of Medicine, Indianapolis, IN
-
-## License
-
-MIT License. See individual data use agreements for ADSP data restrictions.
+- AlphaGenome MCP server: https://github.com/taehojo/alphagenome-mcp
+- Variant browser: https://taehojo.github.io/rarevariants/

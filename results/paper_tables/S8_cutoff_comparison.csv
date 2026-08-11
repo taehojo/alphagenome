@@ -1,0 +1,9 @@
+modality,dichotomisation,n,ir,fisher_p,passes_bonferroni
+RNA-seq,Top 20%,9866,1.087,5.3656699669127026e-08,True
+RNA-seq,Median split,9866,1.089,1.5233830202050646e-10,True
+CAGE,Top 20%,9866,1.056,0.0003008727575439647,True
+CAGE,Median split,9866,1.068,3.7088416867269655e-07,True
+ChIP-histone,Top 20%,9866,1.061,3.176787854202043e-05,True
+ChIP-histone,Median split,9866,1.058,6.335017322293417e-05,True
+DNase,Top 20%,9866,1.029,0.046997126801207864,False
+DNase,Median split,9866,1.055,2.8751246908980765e-05,True
