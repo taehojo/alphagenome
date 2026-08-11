@@ -1,5 +1,21 @@
 # Rare variants and AlphaGenome-predicted regulatory impact in Alzheimer's disease genes
 
+## Variant browser
+
+### **https://taehojo.github.io/rarevariants/**
+
+An interactive catalogue of the 9,943 analysed rare variants across the 85
+AD-associated genes. Pick a gene to see its variants by genomic position, with
+the per-modality AlphaGenome effect scores, the case-control ratio and the
+enrichment direction for each one, broken down by ancestry stratum. Nothing to
+install; the whole catalogue loads in the browser.
+
+<!-- 스크린샷을 docs/img/browser.png 로 넣으면 아래 줄의 주석을 벗기세요
+[![Variant browser](docs/img/browser.png)](https://taehojo.github.io/rarevariants/)
+-->
+
+---
+
 Analysis code for a study of rare-variant regulatory impact in Alzheimer's
 disease-associated genes (Jo et al., manuscript under review).
 
@@ -64,4 +80,3 @@ Ensembl VEP v110 for script 06.
 ## Related
 
 - AlphaGenome MCP server: https://github.com/taehojo/alphagenome-mcp
-- Variant browser: https://taehojo.github.io/rarevariants/
