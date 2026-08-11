@@ -1,6 +1,7 @@
 # Rare variants and AlphaGenome-predicted regulatory impact in Alzheimer's disease genes
 
-Analysis code for Jo et al., *Cell Reports* (CELL-REPORTS-D-26-03243).
+Analysis code for a study of rare-variant regulatory impact in Alzheimer's
+disease-associated genes (Jo et al., manuscript under review).
 
 Rare variants (MAF < 1%) in 85 AD-associated genes were scored with AlphaGenome
 across eight regulatory modalities and compared against case-control allele
