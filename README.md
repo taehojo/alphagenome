@@ -48,6 +48,12 @@ No participant-level or variant-level data are distributed here. Obtain them fro
 
 Place downloads under `data/` and pass paths on the command line.
 
+Two files are included: `data/Table_S1_gene_list.csv` (the 85 genes, with the
+cell-type category counted once per gene) and `data/cell_type_dictionary.csv`
+(the full curated dictionary, 89 entries over 87 genes). The number in the
+first filename is historical and does not correspond to any table number in the
+current manuscript. See `data/README.md`.
+
 `data/Table_S2_variant_data.csv` holds the 9,943 analysed variants with their
 AlphaGenome scores and case-control summary statistics, the same table served by
 the browser at https://taehojo.github.io/rarevariants/ . It contains no
