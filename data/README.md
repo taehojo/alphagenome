@@ -1,79 +1,43 @@
 # Data
 
-## Included Data
+Two files are distributed here. Neither contains individual-level genotypes.
 
-### Table_S1_gene_list.csv
+### `Table_S1_gene_list.csv`
 
-List of 85 AD-associated genes analyzed in this study, selected based on the ADSP Gene Verification Committee (GVC) top hits list.
+The 85 AD-associated genes analysed in the study (ADSP Gene Verification
+Committee top-hits list), with GRCh38 coordinates and the cell-type category
+used in the cell-type-stratified analyses.
 
-| Column | Description |
-|--------|-------------|
-| `gene_name` | HGNC gene symbol |
-| `gene_id` | Ensembl gene ID |
-| `chromosome` | Chromosome number |
-| `start` | Gene start position (GRCh38) |
-| `end` | Gene end position (GRCh38) |
-| `strand` | Strand (+/-) |
-| `length_bp` | Gene length in base pairs |
-| `Priority` | Evidence tier (1-4) |
-| `Cell_Type` | Predominant cell type expression category |
+The number in the filename is historical and does not correspond to any table
+number in the current manuscript.
 
-### Table_S2_variant_data.csv
+`Cell_Type` is derived from `cell_type_dictionary.csv` with each gene counted
+once, which is how the manuscript reports it: genes assigned to two categories
+(CLU, ANK3) are counted under Neuron, the single oligodendrocyte gene (MAF) is
+grouped with Ubiquitous, and SLC2A4RG, which is absent from the dictionary, is
+also grouped with Ubiquitous. This gives Neuron 16, Microglia 14, Astrocyte 5
+and Ubiquitous 50.
 
-9,943 unique rare variants (AC >= 3) mapped to 85 AD gene regions with case-control statistics and AlphaGenome-predicted regulatory effect scores.
+### `cell_type_dictionary.csv`
 
-| Column | Description |
-|--------|-------------|
-| `variant_id` | dbSNP rsID |
-| `chr_num` | Chromosome number |
-| `pos` | Genomic position (GRCh38) |
-| `REF` | Reference allele |
-| `ALT` | Alternative allele |
-| `gene_name` | Mapped gene symbol |
-| `gene_id` | Ensembl gene ID |
-| `population` | Population group (NHW, AA, Asian, Hispanic) |
-| `case_AF` | Case allele frequency |
-| `case_AC` | Case allele count |
-| `case_AN` | Case allele number |
-| `ctrl_AF` | Control allele frequency |
-| `ctrl_AC` | Control allele count |
-| `ctrl_AN` | Control allele number |
-| `total_AC` | Total allele count (case_AC + ctrl_AC) |
-| `cc_ratio` | Case-control allele frequency ratio |
-| `log2_cc_ratio` | Log2-transformed CC ratio |
-| `enrichment` | Enrichment category (case_enriched, ctrl_enriched, case_only, ctrl_only) |
-| `OR` | Odds ratio |
-| `fisher_p` | Fisher's exact test p-value |
-| `rna_seq_effect` | AlphaGenome RNA-seq effect score |
-| `cage_effect` | AlphaGenome CAGE effect score |
-| `chip_histone_effect` | AlphaGenome ChIP histone effect score |
-| `dnase_effect` | AlphaGenome DNase effect score |
-| `splice_junctions_effect` | AlphaGenome splice junctions effect score |
-| `splice_sites_effect` | AlphaGenome splice sites effect score |
-| `splice_site_usage_effect` | AlphaGenome splice site usage effect score |
-| `chip_tf_effect` | AlphaGenome ChIP TF effect score |
-| `ag_match_type` | AlphaGenome allele match type |
+The full hand-curated dictionary as used in the analysis: 89 entries covering 87
+unique genes, in `gene,category` form.
 
-## Data Not Included
+| Category | Entries |
+|---|---|
+| Neuron | 17 |
+| Microglia | 15 |
+| Astrocyte | 7 |
+| Oligodendrocyte | 2 |
+| Ubiquitous | 48 |
 
-### variant_cc_with_alphgenome.csv (Primary Analysis File)
+CLU appears under both Neuron and Astrocyte, and ANK3 under both Neuron and
+Oligodendrocyte. APOE, CD33 and MAPT are in the dictionary but not in the
+analysed 85-gene set. These are literature-based priors, not derived from
+single-nucleus RNA-seq or any reference atlas.
 
-The main analysis file (18,412 rows, 33 columns) contains individual-level variant data derived from ADSP WGS and cannot be publicly shared due to data use agreements.
+### Everything else
 
-## Accessing ADSP Data
-
-The individual-level genetic data used in this study were obtained from the Alzheimer's Disease Sequencing Project (ADSP).
-
-To access ADSP data:
-
-1. Visit [NIAGADS](https://adsp.niagads.org/)
-2. Submit a data access request through the NIAGADS Data Sharing Service
-3. Approval is required from the ADSP Data Access Committee
-4. Once approved, WGS data (Release 4) can be downloaded
-
-**ADSP WGS R4 includes:**
-- 24,595 participants (6,296 AD cases, 18,299 controls)
-- Whole genome sequencing data
-- Phenotype and covariate information
-
-For questions about data access, contact NIAGADS at https://adsp.niagads.org/.
+Obtained from the sources listed in the top-level README. ADSP genotype and
+phenotype data are under controlled access (dbGaP phs000572) and cannot be
+redistributed.

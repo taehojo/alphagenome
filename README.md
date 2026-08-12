@@ -55,30 +55,36 @@ individual-level genotypes.
 
 ## Pipeline
 
-| Script | Produces |
-|---|---|
-| `01_extract_rare_variants.py` | Per-ancestry rare-variant extraction (PLINK 2.0) and mapping to the 85 gene regions |
-| `02_alphagenome_predict.py` | AlphaGenome scores, 8 modalities, via the API |
-| `03_interaction_ratio.py` | Table 2, Supplementary Tables S5, S7 (A-C), S8 |
-| `04_clustering_models.py` | Supplementary Tables S19, S23 (GEE, RINT) |
-| `05_permutation_specificity.py` | Supplementary Table S27 (1,000 size-matched gene sets) |
-| `06_noncoding_strata.py` | Supplementary Table S22 (VEP three strata) |
-| `07_r5_assessment.py` | Supplementary Tables S11, S18 (R5 assessment) |
-| `08_snatac_concordance.py` | Supplementary Table S13, Figure S6 |
-| `09_chromhmm_enrichment.py` | Supplementary Tables S14a/b, Figure S7 |
-| `10_bellenguez_concordance.py` | Supplementary Table S20 |
+Each script corresponds to one stage of the analysis reported in the manuscript.
+
+| Script | Analysis stage | Outputs |
+|---|---|---|
+| `01_extract_rare_variants.py` | Rare-variant extraction per ancestry stratum (PLINK 2.0, MAF < 1%) and mapping to the 85 gene regions (promoter -5 kb to +1 kb of the 3' end) | variant table |
+| `02_alphagenome_predict.py` | AlphaGenome API scoring, eight regulatory modalities, one scalar per variant per modality | scored variant table |
+| `03_interaction_ratio.py` | Primary interaction ratio, top-20% split with ties assigned high; allele-count and percentile sweeps; decile dose-response; top-20% versus median split | Table 2; Supplementary Tables S5, S7 A-C, S8 |
+| `04_clustering_models.py` | Within-gene clustering: GEE under independence and exchangeable working correlations, and rank-based inverse normal regression with gene-clustered standard errors | Supplementary Tables S19, S23 |
+| `05_permutation_specificity.py` | Size-matched null of 1,000 random 85-gene sets drawn from the non-AD AlphaGenome universe | Supplementary Table S27 |
+| `06_noncoding_strata.py` | VEP v110 three-strata analysis: all variants, protein-altering excluded, non-coding only | Supplementary Table S22 |
+| `07_r5_assessment.py` | Independent ADSP R5 assessment. Population-proportional control subsampling to the R4 case-to-control ratio of 1:2.9, 100 iterations, seed 42, cases held fixed and controls drawn without replacement; reports the median and the 2.5th-97.5th percentile band as a control-subsampling robustness interval | Supplementary Tables S11, S18 |
+| `08_snatac_concordance.py` | Concordance of predicted DNase effects with measured snATAC-seq accessibility, GSE174367 | Supplementary Table S13; Figure S6 |
+| `09_chromhmm_enrichment.py` | ChromHMM 15-state enrichment across eight brain epigenomes | Supplementary Tables S14a, S14b; Figure S7 |
+| `10_bellenguez_concordance.py` | Direction concordance between per-gene interaction ratios and Bellenguez lead-variant odds ratios | Supplementary Table S20 |
 
 `03_interaction_ratio.py` is the entry point and reproduces the primary result:
 
 ```
 pip install -r requirements.txt
-python code/03_interaction_ratio.py --variants data/variant_table.csv --outdir results
+python code/03_interaction_ratio.py --variants data/variant_table.csv --outdir results/paper_tables
 ```
 
-Its outputs in `results/paper_tables/` are the values printed in the paper. The analysis set
-is variants with allele count >= 3, deduplicated on chromosome:position:REF:ALT,
-carrying all four primary AlphaGenome scores and a finite case-control ratio
-(n = 9,866); case-only variants are excluded.
+Its outputs in `results/paper_tables/` are the values printed in the paper. The
+analysis set is variants with allele count >= 3, deduplicated on
+chromosome:position:REF:ALT, carrying all four primary AlphaGenome scores and a
+finite case-control ratio (n = 9,866); case-only variants are excluded.
+
+Scripts 01, 04, 05, 06, 09 and 10 still carry absolute paths from the machine
+the analysis ran on. Edit the path constants at the top of each before running;
+the file layout there does not match this repository.
 
 ## Requirements
 
